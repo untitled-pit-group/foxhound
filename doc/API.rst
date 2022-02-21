@@ -212,7 +212,7 @@ uploads.finish
     2404 not_found
         The ``upload_id`` provided does not correspond to an in-progress upload.
 
-After calling this method, ``file.check_indexing_progress`` can be called
+After calling this method, ``files.check_indexing_progress`` can be called
 periodically to check the processing status of this file.
 
 ==============
@@ -236,9 +236,9 @@ This method can be called even if the file upload has finished to prevent
 indexing. This method will invariably incur some data loss so MUST be invoked
 only with user consent or under irreparable circumstances.
 
-============================
-file.check_indexing_progress
-============================
+=============================
+files.check_indexing_progress
+=============================
 
 :Summary: Return information on the current indexing state of the uploaded
     document.
@@ -250,9 +250,9 @@ file.check_indexing_progress
     2404 not_found
         The ``file_id`` is invalid.
 
-=======================
-file.get_indexing_error
-=======================
+========================
+files.get_indexing_error
+========================
 
 :Summary: Get a description of where indexing a file has failed. This is
     possible only for `Files <File>`_ with the indexing state -1.
@@ -274,9 +274,9 @@ file.get_indexing_error
     2404 not_found
         The ``file_id`` is invalid.
 
-========
-file.get
-========
+=========
+files.get
+=========
 
 :Summary: Get relevant metadata for a file.
 :Params:
@@ -287,9 +287,9 @@ file.get
     2404 not_found
         The ``file_id`` is invalid.
 
-=====================
-file.request_download
-=====================
+======================
+files.request_download
+======================
 
 :Summary: Obtain a download URL for the file, in case a local copy is needed.
 :Params:
@@ -303,9 +303,9 @@ file.request_download
 The download URL should be treated as though it will be valid for no more than
 24 hours.
 
-=========
-file.edit
-=========
+==========
+files.edit
+==========
 
 :Summary: Change the user-editable metadata of a file.
 :Params:
@@ -328,9 +328,9 @@ file.edit
     2404 not_found
         The ``file_id`` is invalid.
 
-==============
-file.edit_tags
-==============
+===============
+files.edit_tags
+===============
 
 :Summary: Atomically change a file's tags.
 :Params:
@@ -429,7 +429,7 @@ After uploading, a file can be in one of these indexing states:
 If the file enters the -1 state, it becomes pending for removal as though it
 was uploaded but not indexed, and its ``removal_deadline`` is set to 24 hours
 after the error occured. The particular error can be obtained using
-``file.get_indexing_error``.
+``files.get_indexing_error``.
 
 ------------
 SearchResult
