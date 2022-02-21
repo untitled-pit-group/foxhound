@@ -24,6 +24,8 @@ not implemented.
 All requests to the JSON-RPC endpoint MUST contain an auth token in the header,
 which is obtained from ``POST /auth-token``.
 
+::
+
     Authorization: Bearer <<auth token>>
 
 ------
