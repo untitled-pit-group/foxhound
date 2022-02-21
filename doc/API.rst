@@ -13,13 +13,19 @@ The API is structured as a `JSON-RPC <https://www.jsonrpc.org/specification>`_
 endpoint, therefore JSON-RPC 2.0 conventions apply. The only exception to this
 is the ``POST /auth-token`` endpoint, as documented below.
 
-The JSON-RPC request must be sent to the ``/rpc`` endpoint of the server.
+The JSON-RPC request must be sent as POST to the ``/rpc`` endpoint of the
+server, using the UTF-8 charset for body encoding.
 
 All JSON-RPC methods accept parameters only using the by-name convention, i.e.,
-the ``params`` MUST be an Object with the names as provided. The JSON-RPC
-request SHOULD, but is NOT REQUIRED to contain an ``id`` field, given the
-linearity of the HTTP protocol; submitting multiple RPC calls using one POST is
-not implemented.
+the ``params`` MUST be an Object with the names as provided. Batch requests (as
+per JSON-RPC_ §6) MUST NOT be sent to the RPC endpoint.
+
+The presence or absence of an ``id`` field determines whether the call is a
+notification or a request. If the call is a notification, a success response
+SHALL have HTTP status 204 No Content and no body; otherwise, a success
+response SHALL have HTTP status 200 OK and a JSON-encoded body as appropriate,
+using the UTF-8 charset. All aftdocumented endpoints MUST be requested as method
+calls unless noted otherwise therein.
 
 All requests to the JSON-RPC endpoint MUST contain an auth token in the header,
 which is obtained from ``POST /auth-token``.
