@@ -1,6 +1,6 @@
------------
+===========
 Conventions
------------
+===========
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -28,9 +28,9 @@ which is obtained from ``POST /auth-token``.
 
     Authorization: Bearer <<auth token>>
 
-------
+======
 Errors
-------
+======
 
 As per JSON-RPC, the errors are reported using the ``error`` field of the
 response. The standard codes (-32700, -32600, -32601, -32602) are returned as
@@ -92,9 +92,9 @@ There is no ``data`` key.
         }
     }
 
-----------------
+================
 POST /auth-token
-----------------
+================
 
 **Important:** This endpoint does not return a JSON-RPC formatted response, and
 does not accept a JSON-RPC formatted request.
@@ -132,9 +132,9 @@ in which case it should be requested again before proceeding; as such, the
 client SHOULD request a new token on every startup, and SHOULD forget an active
 token after 30 minutes of inactivity elapse.
 
--------------
+=============
 uploads.begin
--------------
+=============
 
 :Summary: Mint a GCS signed target URL to perform a file upload onto. The
     logistics of the upload and long-term storage are handled by GCS, not by
@@ -176,9 +176,9 @@ the upload will be automatically cancelled under the assumption that it has
 failed transiently and the client cannot inform the server of the fact. Any
 partial upload data is removed.
 
---------------
+==============
 uploads.finish
---------------
+==============
 
 :Summary: Report to the server that a file upload has been finished and any
     necessary processing can begin. This MUST be called only after the entire
@@ -215,9 +215,9 @@ uploads.finish
 After calling this method, ``file.check_indexing_progress`` can be called
 periodically to check the processing status of this file.
 
---------------
+==============
 uploads.cancel
---------------
+==============
 
 :Summary: Request the server to clean up any state associated with this file,
     including deleting any partial uploaded data from GCS.
@@ -236,9 +236,9 @@ This method can be called even if the file upload has finished to prevent
 indexing. This method will invariably incur some data loss so MUST be invoked
 only with user consent or under irreparable circumstances.
 
-----------------------------
+============================
 file.check_indexing_progress
-----------------------------
+============================
 
 :Summary: Return information on the current indexing state of the uploaded
     document.
@@ -250,9 +250,9 @@ file.check_indexing_progress
     2404 not_found
         The ``file_id`` is invalid.
 
------------------------
+=======================
 file.get_indexing_error
------------------------
+=======================
 
 :Summary: Get a description of where indexing a file has failed. This is
     possible only for `Files <File>`_ with the indexing state -1.
@@ -274,9 +274,9 @@ file.get_indexing_error
     2404 not_found
         The ``file_id`` is invalid.
 
---------
+========
 file.get
---------
+========
 
 :Summary: Get relevant metadata for a file.
 :Params:
@@ -287,9 +287,9 @@ file.get
     2404 not_found
         The ``file_id`` is invalid.
 
----------------------
+=====================
 file.request_download
----------------------
+=====================
 
 :Summary: Obtain a download URL for the file, in case a local copy is needed.
 :Params:
@@ -303,9 +303,9 @@ file.request_download
 The download URL should be treated as though it will be valid for no more than
 24 hours.
 
----------
+=========
 file.edit
----------
+=========
 
 :Summary: Change the user-editable metadata of a file.
 :Params:
@@ -328,9 +328,9 @@ file.edit
     2404 not_found
         The ``file_id`` is invalid.
 
---------------
+==============
 file.edit_tags
---------------
+==============
 
 :Summary: Atomically change a file's tags.
 :Params:
@@ -350,9 +350,9 @@ not change attachment (if it was attached, it will remain attached, and vice
 versa.) If a tag is specified in the ``remove`` list which is not attached to
 a file, the tag will not change attachment.
 
---------------
+==============
 search.perform
---------------
+==============
 
 :Summary: Perform a search against the index.
 :Params:
