@@ -1,6 +1,6 @@
-===========
+-----------
 Conventions
-===========
+-----------
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -35,20 +35,25 @@ Errors
 As per JSON-RPC, the errors are reported using the ``error`` field of the
 response. The standard codes (-32700, -32600, -32601, -32602) are returned as
 per the spec. The request-specific codes are allocated in the 1000..1999 range.
-If an error occurs, the HTTP status code is either in the 4xx or 5xx range, as
-per circumstances; in particular, a non-4xx and non-5xx response code indicates
+If an error occurs, the HTTP status code is either 400 or 500, as per
+circumstances; in particular, a non-4xx and non-5xx response code indicates
 that the request completed successfully and the resposne object contains a
 ``result`` field (which in some cases might be ``null`` if the request doesn't
-garner a response, as documented.) The ``message`` field contains a
-user-friendly error message in the server's default language.
+garner a response, as documented.)
+
+If an error occurs, the ``message`` field contains a user-friendly error
+message in the server's default language.
 
 If an error maps cleanly onto an HTTP response code (such as 404 Not Found),
-the HTTP response code is set to that status, and the error code is 2000 + the
-response code (e.g., HTTP 404 turns into code 2404.)
+the error code is 2000 + the response code (e.g., HTTP 404 turns into code
+2404.) Regardless, the HTTP response code is set to 400 or 500 as appropriate.
+This implies that a non-400 and non-500 response code in the 4xx or 5xx ranges
+indicates a non-API failure, such as a 503 indicating a server configuration
+failure, or 413 indicating an overly large request body.
 
 The errors that a particular method invocation can return are listed therein.
 Two errors can be returned by any invocation and therefore aren't repeated in
-the documentation.
+the documentation, and don't entirely abide by the rules outlined above.
 
 Any invocation can return error 2429 with the HTTP status code ``429 Too Many
 Requests`` if the requester is being rate-limited. The response contains a
@@ -101,15 +106,18 @@ does not accept a JSON-RPC formatted request.
 :Body: plaintext: the application API secret
 :Response: plaintext: the token to include in further requests. The response
     MAY contain a CRLF (\r\n) which MUST be stripped by the requester before
-    using the remainder of the body verbatim.
+    using the remainder of the body verbatim as a token.
 :Errors: - HTTP status 429: The requester is being rate-limited. The request
            should be retried no sooner than after the number of seconds
            specified in the ``Retry-After`` seconds.
          - HTTP status 401: The provided application API secret is invalid. The
            request should not be retried.
 
-         If the requester provides an invalid application API secret *and* is being
-         rate-limited, HTTP status 429 takes precedence.
+         If the requester provides an invalid application API secret *and* is
+         being rate-limited, HTTP status 429 takes precedence.
+
+         In either case, the response body is a plaintext user-friendly message
+         in the server's default language.
 
 The token returned from the response should hereinafter be provided in
 subsequent requests with the Authorization header:
@@ -149,9 +157,12 @@ uploads.begin
         double-precision floating point number.
     1001 in_progress
         An upload was started for a file with the same BLAKE3 hash but not
-        finished. The ``data`` object contains an ``upload_id`` field that can
-        be used to cancel the in-progress upload, though that MUST be performed
-        only with user consent and outlining the potential data loss.
+        finished. The ``data`` field is set to the upload ID of the in-progress
+        upload so that it can be cancelled, though that MUST be performed only
+        with user consent and outlining the potential data loss.
+    2409 conflict
+        The file with the given hash has already been successfully uploaded. The
+        ``data`` field is set to the file ID of the relevant file.
 
 The file's uploading timestamp will be set to the time at which uploading was
 begun, not at which it was finished.
@@ -212,17 +223,17 @@ uploads.cancel
     including deleting any partial uploaded data from GCS.
 :Params:
     upload_id
-        The file ID, as returned by ``uploads.begin``.
+        The upload ID, as returned by ``uploads.begin``.
 :Response: ``null``
 :Errors:
     2404 not_found
-        The ``file_id`` provided does not correspond to an in-progress upload.
+        The ``upload_id`` provided does not correspond to an in-progress upload.
 
 Calling this method will also invalidate the upload ID such that it will return
-a 2404 error upon future calls to this method or ``upload.finish``.
+a 2404 error upon future calls to this method or ``uploads.finish``.
 
 This method can be called even if the file upload has finished to prevent
-indexing. This method will invariably incur some data loss so MUST be performed
+indexing. This method will invariably incur some data loss so MUST be invoked
 only with user consent or under irreparable circumstances.
 
 ----------------------------
@@ -253,7 +264,7 @@ file.get_indexing_error
         The integer indexing state at which the error occured, corresponding to
         the ones defined for File_.
     message
-        A human readable summary of what went wrong.
+        A human-readable summary of what went wrong.
     log
         A string containing output from the indexing that might be useful for
         debugging.
@@ -309,6 +320,11 @@ file.edit
         A Timestamp_ or ``null`` if not set.
 :Response: The File_ object, after applying any tag changes.
 :Errors:
+    -32602 invalid_params
+        A parameter was absent or of the wrong type (e.g., ``tags`` not being
+        an array of strings, or ``relevance_timestamp`` not being in RFC 3339
+        format.) If the ``data`` field is present, it lists an array
+        of the field names that were invalid.
     2404 not_found
         The ``file_id`` is invalid.
 
@@ -519,4 +535,4 @@ into a larger range, inclusive of both endpoints.
     String (hex-escaped UTF-8): lol \xF0\x9F\xA4\xA3 so funy
     Range:                      [4 7]
     Highlight fragment:         <<🤣 so>>
-    String (with highlight):    lol 🤣 so funy
+    String (with highlight):    lol <<🤣 so>> funy
