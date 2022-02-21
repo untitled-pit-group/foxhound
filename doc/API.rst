@@ -150,6 +150,10 @@ uploads.begin
         The file's BLAKE3 hash, in hex form.
     length
         The file's length in bytes.
+    name
+        The file's name. This is unrelated to the name provided at
+        ``uploads.finish`` and intended for display purposes to clients other
+        than the requester which are interested in ongoing upload progress.
 :Response:
     upload_id
         An upload ID. This is different from a file ID.
@@ -241,6 +245,63 @@ a 2404 error upon future calls to this method or ``uploads.finish``.
 This method can be called even if the file upload has finished to prevent
 indexing. This method will invariably incur some data loss so MUST be invoked
 only with user consent or under irreparable circumstances.
+
+=======================
+uploads.report_progress
+=======================
+
+*Note:* This is a notification endpoint, not a method call.
+
+:Summary: Store a progress report on the server to present to other clients.
+:Params:
+    upload_id
+        The upload ID, as returned by ``uploads.begin``.
+    progress_length
+        The number of bytes currently uploaded. The progress indication is
+        calculated using the ``length`` provided at the beginning of uploading.
+:Errors:
+    2404 not_found
+        The ``upload_id`` is invalid.
+
+================
+uploads.progress
+================
+
+:Summary: Get the latest progress report from the uploader.
+:Params:
+    upload_id
+        The upload ID, as returned by ``uploads.begin``.
+:Response: Float value in the range [0, 1] representing the upload progress.
+:Errors:
+    2404 not_found
+        The ``upload_id`` is invalid.
+
+============
+uploads.list
+============
+
+:Summary: List all in-progress uploads.
+:Params: None.
+:Response: An array of upload objects, containing these keys:
+
+    id
+        The upload ID.
+    name
+        The display filename provided at the beginning of the upload.
+    progress
+        A float value in range [0, 1] representing the upload progress.
+:Errors: None.
+
+==========
+files.list
+==========
+
+:Summary: List all uploaded files.
+:Params: None.
+:Response: An array of File_ objects.
+:Errors: None.
+
+TODO: This could probably use pagination.
 
 =============================
 files.check_indexing_progress
