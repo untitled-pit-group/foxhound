@@ -123,6 +123,7 @@ class Dispatcher
     public function dispatch(Request $req): Response
     {
         $id = null;
+        $isNotification = false;
 
         try {
             try {
@@ -136,7 +137,7 @@ class Dispatcher
             }
 
             $id = $request['id'] ?? null;
-            $isNotification = $id !== null;
+            $isNotification = $id === null;
 
             [$method, $params] = $this->extractDispatchInfo($request);
 
@@ -163,6 +164,9 @@ class Dispatcher
                 );
             }
         } catch (\Throwable $exc) {
+            if ($isNotification) {
+                return new Response('', Response::HTTP_NO_CONTENT);
+            }
             return self::makeErrorResponse(
                 $id,
                 2500,
