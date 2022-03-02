@@ -112,4 +112,10 @@ $app->router->group([
     require __DIR__.'/../routes/web.php';
 });
 
+(function () use ($app) {
+    $app->singleton(App\Rpc\Registry::class);
+    $rpc = $app->get(App\Rpc\Registry::class);
+    require __DIR__.'/../routes/rpc.php';
+})();
+
 return $app;

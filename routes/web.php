@@ -13,6 +13,4 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return "It Works!";
-});
+$router->post('/rpc', 'RpcController@handleCall');
