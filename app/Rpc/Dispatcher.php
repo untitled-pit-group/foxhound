@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace App\Rpc;
 use App\Http\ResponseSerializable;
+use App\Support\Debug;
 use Illuminate\Contracts\Support\{Arrayable, Jsonable};
 use Illuminate\Container\Container;
 use Illuminate\Http\{JsonResponse, Request, Response};
@@ -167,17 +168,22 @@ class Dispatcher
             if ($isNotification) {
                 return new Response('', Response::HTTP_NO_CONTENT);
             }
+
+            $data = null;
+            if (\env('APP_DEBUG', false)) {
+                $data = [
+                    'exception' => get_class($exc),
+                    'message' => $exc->getMessage(),
+                    'location' => sprintf("%s(%d)",
+                        $exc->getFile() ?: "<unknown>", $exc->getLine() ?: 0),
+                    'trace' => Debug::prettyPrintTrace($exc->getTrace()),
+                ];
+            }
             return self::makeErrorResponse(
                 $id,
                 2500,
                 "An internal server error occured.",
-                [
-                    'exception' => get_class($exc),
-                    'message' => $exc->getMessage(),
-                    'location' => sprintf("%s:%d",
-                        $exc->getFile() ?: "<unknown>", $exc->getLine() ?: 0),
-                    'trace' => $exc->getTraceAsString(),
-                ],
+                $data,
             );
         }
     }
