@@ -147,7 +147,7 @@ uploads.begin
     the API server.
 :Params:
     hash
-        The file's BLAKE3 hash, in hex form.
+        The file's SHA-256 hash, in hex form.
     length
         The file's length in bytes.
     name
@@ -159,14 +159,14 @@ uploads.begin
         An upload ID. This is different from a file ID.
     upload_url
         The GCS URL to perform the upload to. ``null`` if the file is already
-        uploaded (its BLAKE3 hash matches a known file.)
+        uploaded (its SHA-256 hash matches a known file.)
 :Errors:
     1000 size_limit_exceeded
         The server is configured to not accept files this large, or the file
         size provided cannot be losslessly stored in a IEEE 754
         double-precision floating point number.
     1001 in_progress
-        An upload was started for a file with the same BLAKE3 hash but not
+        An upload was started for a file with the same SHA-256 hash but not
         finished. The ``data`` field is set to the upload ID of the in-progress
         upload so that it can be cancelled, though that MUST be performed only
         with user consent and outlining the potential data loss.
@@ -465,7 +465,7 @@ relevance_timestamp
 length
     The size of the file in bytes.
 hash
-    The BLAKE3 hash of the file.
+    The SHA-256 hash of the file.
 type
     Either ``document``, ``plain`` or ``media``, depending on the document's
     specifics. This also determines the kind of search results returned.
