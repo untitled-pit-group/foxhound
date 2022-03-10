@@ -12,7 +12,7 @@ return new class extends Migration
         // cross-database schema building abstraction, especially when it has
         // its own weird syntax that doesn't really map onto Postgres's
         // primitives that well.
-        DB::statement(<<'SQL'
+        DB::statement(<<<'SQL'
             create table uploads (
                 id bigint primary key,
                 hash bytea not null,
@@ -26,7 +26,7 @@ return new class extends Migration
         SQL);
         DB::statement("comment on column uploads.file_hash is ?",
             ["hash of file content, stored in multihash format"]);
-        DB::statement(<<'SQL'
+        DB::statement(<<<'SQL'
             create table files (
                 id bigint primary key,
                 name text not null,
@@ -37,11 +37,11 @@ return new class extends Migration
                 relevance_timestamp timestamptz default null
             )
         SQL);
-        DB::statement(<<'SQL'
+        DB::statement(<<<'SQL'
             create type indexing_state as enum
                 ('queued', 'transform', 'transcribe', 'ingest', 'finished', 'error')
         SQL);
-        DB::statement(<<'SQL'
+        DB::statement(<<<'SQL'
             create table files_indexing_state (
                 file_id bigint primary key references files (file_id),
                 file_state indexing_state not null,
