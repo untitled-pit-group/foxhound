@@ -20,12 +20,14 @@ return new class extends Migration
                 gcs_path text not null,
                 name text not null,
                 upload_start timestamptz not null,
-                upload_progress float4 default 0 check (progress between 0 and 1),
-                upload_progress_report timestamptz default null
+                progress float4 default 0 check (progress between 0 and 1),
+                last_progress_report timestamptz default null
             )
         SQL);
-        DB::statement("comment on column uploads.file_hash is ?",
-            ["hash of file content, stored in multihash format"]);
+        DB::statement(<<<'SQL'
+            comment on column uploads.hash is
+                'hash of file content, stored in multihash format'
+        SQL);
         DB::statement(<<<'SQL'
             create table files (
                 id bigint primary key,
@@ -43,12 +45,12 @@ return new class extends Migration
         SQL);
         DB::statement(<<<'SQL'
             create table files_indexing_state (
-                file_id bigint primary key references files (file_id),
-                file_state indexing_state not null,
+                id bigint primary key references files (id),
+                state indexing_state not null,
                 error_context jsonb default null,
                 last_activity timestamptz not null,
                 check (case
-                        when file_state = 'error' then error_context is not null
+                        when state = 'error' then error_context is not null
                         else error_context is null
                        end)
             )
