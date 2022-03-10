@@ -20,7 +20,8 @@ return new class extends Migration
                 gcs_path text not null,
                 name text not null,
                 upload_start timestamptz not null,
-                progress float4 default 0 check (progress between 0 and 1),
+                progress float4 not null default 0
+                    check (progress between 0 and 1),
                 last_progress_report timestamptz default null
             )
         SQL);
@@ -32,12 +33,17 @@ return new class extends Migration
             create table files (
                 id bigint primary key,
                 name text not null,
+                hash bytea not null,
                 length bigint not null,
                 gcs_path text not null,
                 tags text[] not null,
                 upload_timestamp timestamptz not null,
                 relevance_timestamp timestamptz default null
             )
+        SQL);
+        DB::statement(<<<'SQL'
+            comment on column files.hash is
+                'hash of file content, stored in multihash format'
         SQL);
         DB::statement(<<<'SQL'
             create type indexing_state as enum
