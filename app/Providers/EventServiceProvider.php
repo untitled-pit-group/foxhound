@@ -1,28 +1,22 @@
-<?php
-
+<?php declare(strict_types=1);
 namespace App\Providers;
-
 use Laravel\Lumen\Providers\EventServiceProvider as ServiceProvider;
+use App\Events;
+use App\Listeners;
 
 class EventServiceProvider extends ServiceProvider
 {
-    /**
-     * The event listener mappings for the application.
-     *
-     * @var array
-     */
     protected $listen = [
-        \App\Events\ExampleEvent::class => [
-            \App\Listeners\ExampleListener::class,
-        ],
+        // event::class => [listener::class]
+    ];
+    protected $subscribe = [
+        Listeners\GcloudStorageCleanupSubscriber::class,
     ];
 
     /**
-     * Determine if events and listeners should be automatically discovered.
-     *
-     * @return bool
+     * @see https://laravel.com/docs/9.x/events#event-discovery
      */
-    public function shouldDiscoverEvents()
+    public function shouldDiscoverEvents(): bool
     {
         return false;
     }
