@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 namespace App\Support\Postgres;
+use Illuminate\Support\Str;
 
 /**
  * Basic parser of Postgres's array syntax. Does not support dynamic delimiter
@@ -16,6 +17,13 @@ class ArrayParser
         COMMA = ',',
         QUOTE = '"',
         BACKSLASH = "\\";
+    const SPECIALS = [
+        self::OPEN_BRACE,
+        self::CLOSE_BRACE,
+        self::COMMA,
+        self::QUOTE,
+        self::BACKSLASH,
+    ];
 
     protected int $i = 0;
 
@@ -192,5 +200,36 @@ class ArrayParser
     public function parse(): array
     {
         return $this->takeArray();
+    }
+
+    protected static function encodeString(string $string): string
+    {
+        if (Str::contains($string, self::SPECIALS)) {
+            return '"' . strtr($string, [
+                self::QUOTE => self::BACKSLASH . self::QUOTE,
+                self::BACKSLASH => self::BACKSLASH . self::BACKSLASH,
+            ]) . '"';
+        }
+        return $string;
+    }
+
+    public static function encodeArray(array $array): string
+    {
+        $array = array_map(function ($el): string {
+            if ($el === null) {
+                return 'NULL';
+            };
+            if (is_array($el)) {
+                return self::encodeArray($el);
+            }
+
+            $el = (string) $el;
+            // Quote literals that are otherwise prone to misinterpretation.
+            if (strtoupper($el) === 'NULL' || trim($el) === '') {
+                return '"' . $el . '"';
+            }
+            return self::encodeString($el);
+        }, $array);
+        return self::OPEN_BRACE . implode(self::COMMA, $array) . self::CLOSE_BRACE;
     }
 }

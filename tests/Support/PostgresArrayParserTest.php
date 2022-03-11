@@ -28,6 +28,7 @@ class PostgresArrayParserTest extends \PHPUnit\Framework\TestCase
     {
         self::assertEquals([], $this->parse('{}'));
         self::assertEquals(['a'], $this->parse('{a}'));
+        self::assertEquals([''], $this->parse('{""}'));
         self::assertEquals(['a'], $this->parse('{"a"}'));
         self::assertEquals([null], $this->parse('{null}'));
 
@@ -74,5 +75,19 @@ class PostgresArrayParserTest extends \PHPUnit\Framework\TestCase
         self::assertThrows(ParseError::class, fn() => $this->parse('{{a}"b"}'));
         self::assertThrows(ParseError::class, fn() => $this->parse('{"a"{b}}'));
         self::assertThrows(ParseError::class, fn() => $this->parse('{{a}{b}}'));
+    }
+
+    public function test_array_serialization(): void
+    {
+        self::assertEquals('{}', ArrayParser::encodeArray([]));
+        self::assertEquals('{a}', ArrayParser::encodeArray(['a']));
+        self::assertEquals('{a,b}', ArrayParser::encodeArray(['a', 'b']));
+        self::assertEquals('{NULL}', ArrayParser::encodeArray([null]));
+        self::assertEquals('{"null"}', ArrayParser::encodeArray(['null']));
+        self::assertEquals('{"{}"}', ArrayParser::encodeArray(['{}']));
+        self::assertEquals('{{a},{b}}', ArrayParser::encodeArray([['a'], ['b']]));
+        self::assertEquals('{""}', ArrayParser::encodeArray(['']));
+        self::assertEquals('{"\\\\"}', ArrayParser::encodeArray(['\\']));
+        self::assertEquals('{"\\""}', ArrayParser::encodeArray(['"']));
     }
 }
