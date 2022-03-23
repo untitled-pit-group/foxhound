@@ -115,13 +115,14 @@ class Dispatcher
         if ($handler instanceof ClosureHandler) {
             return ($handler->closure)($params);
         } else if ($handler instanceof ControllerHandler) {
-            $ctrl = $handler->target;
+            [$ctrl, $method] = explode('@', $handler->target, 2);
             if (strpos($ctrl, '\\') === false) {
                 // If the controller reference isn't absolute-namespace, assume
                 // default namespace;
                 $ctrl = 'App\\Http\\Rpc\\' . $ctrl;
             }
-            return $this->container->call($ctrl, [$params]);
+            $instance = $this->container->make($ctrl);
+            return $instance->$method($params);
         } else {
             throw new \LogicException("BUG: Invalid handler type: " . get_class($handler));
         }
