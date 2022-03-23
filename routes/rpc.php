@@ -5,3 +5,5 @@
 $rpc->register('test.hello_world', function (array $params) {
     return "hi!";
 });
+
+$rpc->register('uploads.begin', 'UploadController@begin');

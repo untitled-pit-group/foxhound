@@ -141,6 +141,7 @@ class Dispatcher
                     null,
                     $err->getCode(),
                     $err->getMessage(),
+                    $err->getData(),
                 );
             }
 

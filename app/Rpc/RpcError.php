@@ -6,8 +6,13 @@ class RpcError extends \RuntimeException
     // NOTE[pn]: May they forgive me the violation of the Liskov Substitution
     // Principle and trespassing of the SOLID for the sake of intuitiveness in
     // usage.
-    public function __construct(int $code, string $message)
+    public function __construct(int $code, string $message, private $data = null)
     {
         parent::__construct($message, $code);
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 }
