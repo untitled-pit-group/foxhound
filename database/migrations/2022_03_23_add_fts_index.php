@@ -20,13 +20,11 @@ return new class extends Migration
         SQL);
         DB::statement(<<<'SQL'
             create index uploads_fulltext_idx on uploads_fulltext
-                using gin (to_tsvector(content))
+                using gin (to_tsvector('english', content))
         SQL);
         DB::statement(<<<'SQL'
             comment on index uploads_fulltext_idx is
-                'currently uses server-default (i.e., probably English) ' ||
-                'normalization rules, so results might be off for ' ||
-                'non-English texts'
+                'currently uses English normalization rules, so results might be off for non-English texts'
         SQL);
     }
 
