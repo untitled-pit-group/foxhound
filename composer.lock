@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "646073c358984833dfa9a8ff690af567",
+    "content-hash": "8c8e9e526e6adf5ed2e1768a1f22a6c5",
     "packages": [
         {
             "name": "brick/math",
@@ -2308,6 +2308,44 @@
                 "source": "https://github.com/nikic/FastRoute/tree/master"
             },
             "time": "2018-02-13T20:26:39+00:00"
+        },
+        {
+            "name": "paulsnar/redis",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/paulsnar/php-redis.git",
+                "reference": "225fd7f057497e8242d92f40a0385afa1450274c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/paulsnar/php-redis/zipball/225fd7f057497e8242d92f40a0385afa1450274c",
+                "reference": "225fd7f057497e8242d92f40a0385afa1450274c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PN\\Redis\\": "src"
+                }
+            },
+            "license": [
+                "0BSD"
+            ],
+            "authors": [
+                {
+                    "name": "paulsnar",
+                    "email": "paulsnar@paulsnar.lv"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/paulsnar/php-redis/tree/v2.0.1",
+                "issues": "https://github.com/paulsnar/php-redis/issues"
+            },
+            "time": "2022-03-27T21:25:38+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -6987,7 +7025,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.0"
+        "php": "^8.1"
     },
     "platform-dev": [],
     "plugin-api-version": "2.2.0"
