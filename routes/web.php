@@ -13,4 +13,5 @@
 |
 */
 
+$router->post('/auth-token', 'TokenController@mintToken');
 $router->post('/rpc', 'RpcController@handleCall');
