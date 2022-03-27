@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-chdir(diranme(__DIR__));
+chdir(dirname(__DIR__));
 if ( ! file_exists('.env')) {
     copy('.env.example', '.env');
     chmod('.env', 0600);
