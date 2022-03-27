@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace App\Services\UploadService\SizeLimitExceededException;
+namespace App\Services\UploadService;
 
 class SizeLimitExceededException extends \RuntimeException
 {
