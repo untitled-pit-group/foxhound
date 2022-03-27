@@ -39,8 +39,11 @@ class MockClient
   end
 
   def load_secret!
-    # TODO
-    nil
+    dotenv_location = File.join(File.dirname(__FILE__), "..", ".env")
+    dotenv = File.readlines dotenv_location
+    line = dotenv.filter { |x| x.start_with? "FOXHOUND_GLOBAL_SECRET=" }.first.rstrip
+    _, secret = line.split("=", 2)
+    secret
   end
 
   def mint_token!
@@ -55,7 +58,7 @@ class MockClient
 
   def new_rpc_request(method, params)
     request = Net::HTTP::Post.new '/rpc'
-    #request['Authorization'] = "Bearer #{@token}"
+    request['Authorization'] = "Bearer #{@token}"
     request['Accept'] = 'application/json'
     request['Content-Type'] = 'application/json; charset=UTF-8'
     request.body = {
@@ -83,7 +86,7 @@ class MockClient
   end
 
   def call(method, **params)
-    #mint_token! if @token.nil?
+    mint_token! if @token.nil?
     request = new_rpc_request(method, params)
     response = @http.request request
     parse_response(response)
