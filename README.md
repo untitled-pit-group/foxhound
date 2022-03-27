@@ -4,7 +4,8 @@ Primary PIFS backend.
 
 ## Setup
 
-Install PHP 8.1 and PostgreSQL 14. Have [Composer][] handy.
+Install PHP 8.1, PostgreSQL 14, and Redis 6.2; have the last two running. Have
+[Composer][] handy.
 
 [Composer]: https://getcomposer.org/
 
