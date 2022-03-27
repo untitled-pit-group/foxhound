@@ -30,9 +30,7 @@
         }
     },
     "scripts": {
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
+        "post-root-package-install": "php scripts/post-install.php",
         "test": "phpunit"
     },
     "config": {
