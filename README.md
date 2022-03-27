@@ -24,7 +24,11 @@ port, and directory of `public` to taste.)
 
 ## Conventions
 
-In general, follow [EditorConfig][][ and [PSR-1][], [PSR-2][] and [PSR-12][] for
-coding. In general, braces for classes/functions should be on next line, and
-braces for if/switch/etc blocks should be on the same line. Other than that, use
-your best judgement :)
+In general, use [EditorConfig][] for formatting, and follow [PSR-1][] and
+[PSR-12][] for coding. In general, braces for classes/functions should be on
+next line, and braces for if/switch/etc blocks should be on the same line. Other
+than that, use your best judgement :)
+
+[EditorConfig]: https://editorconfig.org/
+[PSR-1]: https://www.php-fig.org/psr/psr-1/
+[PSR-12]: https://www.php-fig.org/psr/psr-12/
