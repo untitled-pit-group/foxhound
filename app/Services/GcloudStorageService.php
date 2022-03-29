@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 namespace App\Services;
+use Google\Cloud\Storage\StorageClient;
 
 class GcloudStorageService
 {
+    public function __construct(private StorageClient $gcs) { }
+
     /**
      * Delete a file from the default GCS bucket.
      *
