@@ -111,7 +111,7 @@ does not accept a JSON-RPC formatted request.
     actions or wasting server resources.
 :Body: plaintext: the application API secret
 :Response: plaintext: the token to include in further requests. The response
-    MAY contain a CRLF (\r\n) which MUST be stripped by the requester before
+    MAY contain a CRLF (\\r\\n) which MUST be stripped by the requester before
     using the remainder of the body verbatim as a token.
 :Errors: - HTTP status 429: The requester is being rate-limited. The request
            should be retried no sooner than after the number of seconds
