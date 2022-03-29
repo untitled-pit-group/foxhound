@@ -158,8 +158,7 @@ uploads.begin
     upload_id
         An upload ID. This is different from a file ID.
     upload_url
-        The GCS URL to perform the upload to. ``null`` if the file is already
-        uploaded (its SHA-256 hash matches a known file.)
+        A signed GCS URL to perform the upload to.
 :Errors:
     1000 size_limit_exceeded
         The server is configured to not accept files this large, or the file
@@ -181,10 +180,18 @@ After the upload is finished, ``uploads.finish`` should be invoked. If the
 upload is cancelled, ``uploads.cancel`` should be invoked to remove the
 in-progress upload.
 
+The GCS URL returned is valid for 24 hours, and the upload as a whole is
+expected to be finished in 24 hours. That said, if a resumable upload is
+initiated, it may be possible to continue and finish uploading even after this
+signed URL expires, given that it's only used to set up the upload session,
+however, it will not be possible to call ``uploads.finish`` and the uploaded
+stray file will be removed eventually by a cleanup job.
+
 If ``uploads.finish`` isn't invoked within 24 hours of beginning the upload,
 the upload will be automatically cancelled under the assumption that it has
-failed transiently and the client cannot inform the server of the fact. Any
-partial upload data is removed.
+failed transiently and the client cannot inform the server of the fact. This
+applies even if the GCS upload becomes finished, but the server isn't informed
+of the fact via ``uploads.finish``.
 
 ==============
 uploads.finish
