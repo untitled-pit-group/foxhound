@@ -3,6 +3,7 @@ namespace App\Services;
 use Google\Cloud\Core\Exception\NotFoundException;
 use Google\Cloud\Storage\{StorageClient, StorageObject};
 use Illuminate\Support\Carbon;
+use App\Services\GcloudStorageService\GcsUrl;
 
 /**
  * All of the methods on this class resolve file paths relative to the
@@ -23,15 +24,20 @@ class GcloudStorageService
         $this->gcsPrefixUrl = rtrim(env('FOXHOUND_GCS_PREFIX'), '/');
     }
 
-
-    private function relativePathToObjectInstance(string $path): StorageObject
+    private function urlToObjectInstance(GcsUrl $url): StorageObject
     {
-        $path = $this->gcsPrefixUrl . '/' . ltrim($path, '/');
-        ['host' => $bucket, 'path' => $urlPath] = parse_url($gcsUrl);
-        $urlPath = ltrim($urlPath, '/');
-        $bucketInstance = $this->gcs->bucket($bucket);
-        $objectInstance = $bucketInstance->object(ltrim($urlPath, '/'));
-        return $objectInstance;
+        return $this->gcs->bucket($url->bucket)
+            ->object($url->object);
+    }
+
+    /**
+     * Transform a relative path to an absolute GCS {@code gs://} URL, taking
+     * the URL configured via {@code FOXHOUND_GCS_PREFIX} as the base.
+     */
+    public function relativePathToAbsolutePath(string $path): GcsUrl
+    {
+        $url = $this->gcsPrefixUrl . '/' . ltrim($path, '/');
+        return new GcsUrl($url);
     }
 
     /**
@@ -40,9 +46,9 @@ class GcloudStorageService
      * Checking this can be prone to race conditions if other services can
      * create or delete the file in the meantime.
      */
-    public function exists(string $path): bool
+    public function exists(GcsUrl $url): bool
     {
-        return $this->relativePathToObjectInstance($path)->exists();
+        return $this->urlToObjectInstance($url)->exists();
     }
 
     /**
@@ -53,9 +59,9 @@ class GcloudStorageService
      * returns. The URL can be used to replace a file at the given path if one
      * already exists.
      */
-    public function signedUploadUrl(string $path): string
+    public function signedUploadUrl(GcsUrl $url): string
     {
-        return $this->relativePathToObjectInstance($path)
+        return $this->urlToObjectInstance($url)
             ->signedUploadUrl(
                 Carbon::now()->add(24, 'hours'),
                 [ 'version' => 'v4' ],
@@ -69,9 +75,9 @@ class GcloudStorageService
      * question does not exist, unless {@param $onlyIfPresent} is set to
      * {@code true}.
      */
-    public function delete(string $path, bool $onlyIfPresent = false): void
+    public function delete(GcsUrl $url, bool $onlyIfPresent = false): void
     {
-        $object = $this->relativePathToObjectInstance($path);
+        $object = $this->urlToObjectInstance($url);
         if ($onlyIfPresent) {
             try {
                 $object->delete();
