@@ -519,8 +519,8 @@ plain
     An array of `SearchResult.Plain`_ objects.
 
 In the interest of compactness, the particular search result fields are
-abbreviated: ``f`` is short for "fragment", ``r`` is short for "ranges", and
-``p``, where applicable, is short for ``position``.
+abbreviated: ``i`` is short for "ID", ``f`` is short for "fragment", ``r`` is
+short for "ranges", and ``p``, where applicable, is short for ``position``.
 
 ^^^^^^^^^^^^^^^^^^
 SearchResult.Plain
@@ -528,6 +528,8 @@ SearchResult.Plain
 
 Fields:
 
+i
+    The document (`File`_) ID.
 f
     An excerpt of the document text, providing context for the search result.
 r
@@ -543,6 +545,8 @@ SearchResult.Document
 
 Fields:
 
+i
+    The document (`File`_) ID.
 f
     An excerpt of the plaintext of the document, providing context for the
     search result.
@@ -560,6 +564,8 @@ SearchResult.Media
 
 Fields:
 
+i
+    The document (`File`_) ID.
 f
     An excerpt of the transcription of the media, providing context for the
     search result.
