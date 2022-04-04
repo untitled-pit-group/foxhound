@@ -33,4 +33,14 @@ class GcsUrl
     {
         return "gs://{$this->bucket}/{$this->object}";
     }
+
+    // MARK: StringableCast conformance
+    public static function fromString(string $value): self
+    {
+        return new self($value);
+    }
+    public function toString(): string
+    {
+        return $this->__toString();
+    }
 }

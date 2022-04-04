@@ -3,6 +3,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Events\FileDeleting;
 use App\Models\Support\RandomIdModel;
+use App\Services\GcloudStorageService\GcsUrl;
+use App\Support\Sha1Hash;
+use App\Support\Db\StringableCast;
 use App\Support\Postgres\StringArray;
 
 class File extends RandomIdModel
@@ -13,6 +16,8 @@ class File extends RandomIdModel
         'deleting' => FileDeleting::class,
     ];
     protected $casts = [
+        'hash' => StringableCast::class . ':' . Sha1Hash::class,
+        'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
         'tags' => StringArray::class,
     ];
 

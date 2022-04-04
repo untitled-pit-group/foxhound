@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace App\Support;
+namespace App\Support\Db;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
 class EnumCast implements CastsAttributes

@@ -4,10 +4,18 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Support\Carbon;
 use App\Events\UploadPruning;
 use App\Models\Support\RandomIdModel;
+use App\Services\GcloudStorageService\GcsUrl;
+use App\Support\Sha1Hash;
+use App\Support\Db\StringableCast;
 
 class Upload extends RandomIdModel
 {
     public $timestamps = false;
+
+    protected $casts = [
+        'hash' => StringableCast::class . ':' . Sha1Hash::class,
+        'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
+    ];
 
     use Prunable;
     public function prunable()

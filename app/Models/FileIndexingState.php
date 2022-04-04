@@ -2,7 +2,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\FileIndexingState\IndexingState;
-use App\Support\EnumCast;
+use App\Support\Db\EnumCast;
 
 class FileIndexingState extends Model
 {
