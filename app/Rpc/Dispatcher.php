@@ -14,7 +14,7 @@ class Dispatcher
         private Container $container,
     ) {}
 
-    private const JSON_ENCODE_OPTIONS = \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR;
+    private const JSON_ENCODE_OPTIONS = \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR | \JSON_INVALID_UTF8_SUBSTITUTE;
     private const JSON_MIME_TYPE = 'application/json; charset=UTF-8';
 
     private static function makeErrorResponse(

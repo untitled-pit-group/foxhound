@@ -23,30 +23,36 @@ class Debug
 
         $trace = "";
         foreach ($frames as $i => $frame) {
-            $file = $frame['file'];
-            if ($file) {
+            if (array_key_exists('file', $frame)) {
+                $file = $frame['file'];
                 // Strip the directory prefix.
                 if (str_starts_with($file, $root)) {
                     $file = substr($file, strlen($root));
                 }
 
-                // If the trace reaches into third-party code, display the
-                // listing in a slightly shortened form.
-                if (str_starts_with($file, "vendor" . DIRECTORY_SEPARATOR)) {
-                    $file = substr($file, strlen("vendor" . DIRECTORY_SEPARATOR));
-                    [$org, $pkg, $file] = explode(DIRECTORY_SEPARATOR, $file, 3);
+                $fileOrig = $file;
+                try {
+                    // If the trace reaches into third-party code, display the
+                    // listing in a slightly shortened form.
+                    if (str_starts_with($file, "vendor" . DIRECTORY_SEPARATOR)) {
+                        $file = substr($file, strlen("vendor" . DIRECTORY_SEPARATOR));
+                        [$org, $pkg, $file] = explode(DIRECTORY_SEPARATOR, $file, 3);
 
-                    // If the source file is in a `src` dir, as most Laravel
-                    // packages are, strip that, why not.
-                    $dirEnd = strpos($file, DIRECTORY_SEPARATOR);
-                    if ($dirEnd !== false) {
-                        $dir = substr($file, 0, $dirEnd);
-                        if ($dir === 'src') {
-                            $file = substr($file, $dirEnd + 1);
+                        // If the source file is in a `src` dir, as most Laravel
+                        // packages are, strip that, why not.
+                        $dirEnd = strpos($file, DIRECTORY_SEPARATOR);
+                        if ($dirEnd !== false) {
+                            $dir = substr($file, 0, $dirEnd);
+                            if ($dir === 'src') {
+                                $file = substr($file, $dirEnd + 1);
+                            }
                         }
-                    }
 
-                    $file = sprintf('{%s/%s}/%s', $org, $pkg, $file);
+                        $file = sprintf('{%s/%s}/%s', $org, $pkg, $file);
+                    }
+                } catch (\Throwable $exc) {
+                    // eh not worth spending too much effort on it
+                    $file = $fileOrig;
                 }
             } else {
                 $file = "<unknown>";
@@ -57,7 +63,7 @@ class Debug
                 $invocation = $frame['class'] . $frame['type'] . $invocation;
             }
             $trace .= sprintf("#%d %s(%d): %s()\n",
-                $i, $file, $frame['line'] ?: 0, $invocation);
+                $i, $file, $frame['line'] ?? 0, $invocation);
         }
 
         return $trace;
