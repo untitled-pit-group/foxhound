@@ -14,6 +14,10 @@ class CorsAllowUnconditional
             $response->headers->set('Access-Control-Allow-Origin',
                 $request->headers->get('Origin'));
         }
+        if ($request->headers->has('Access-Control-Request-Headers')) {
+            $response->headers->set('Access-Control-Allow-Headers',
+                'Authorization, Content-Type, User-Agent');
+        }
         return $response;
     }
 }
