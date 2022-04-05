@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 namespace App\Services;
-use Google\Cloud\Core\Exception\NotFoundException;
+use Google\Cloud\Core\Exception\NotFoundException as GcloudNotFoundException;
 use Google\Cloud\Storage\{StorageClient, StorageObject};
 use Illuminate\Support\Carbon;
 use App\Services\GcloudStorageService\GcsUrl;
+use App\Support\NotFoundException;
 
 /**
  * All of the methods on this class resolve file paths relative to the
@@ -71,21 +72,34 @@ class GcloudStorageService
     /**
      * Delete a file from the storage bucket.
      *
-     * This function rethrows a {@link NotFoundException} if the object in
-     * question does not exist, unless {@param $onlyIfPresent} is set to
-     * {@code true}.
+     * @throws NotFoundException if the object does not exist and
+     *         {@param $onlyIfPresent} is not {@code true}
      */
     public function delete(GcsUrl $url, bool $onlyIfPresent = false): void
     {
         $object = $this->urlToObjectInstance($url);
-        if ($onlyIfPresent) {
-            try {
-                $object->delete();
-            } catch (NotFoundException $exc) {
-                //
-            }
-        } else {
+        try {
             $object->delete();
+        } catch (GcloudNotFoundException $exc) {
+            if ( ! $onlyIfPresent) {
+                throw new NotFoundException();
+            }
+        }
+    }
+
+    /**
+     * Get information about an object. Returns an array in the same shape as
+     * the underlying Google Cloud API client library.
+     *
+     * @throws NotFoundException if the object does not exist
+     */
+    public function getInfo(GcsUrl $url): array
+    {
+        $object = $this->urlToObjectInstance($url);
+        try {
+            return $object->info();
+        } catch (GcloudNotFoundException $exc) {
+            throw new NotFoundException();
         }
     }
 }

@@ -4,9 +4,10 @@ use App\Rpc\RpcError;
 use App\Services\UploadService;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\{Id, Math, NotFoundException, NotImplementedException,
+use App\Support\{Arr, Id, Math, NotFoundException, NotImplementedException,
     RpcConstants, Sha1Hash};
-use App\Support\Presenters\UploadPresenter;
+use App\Support\Presenters\{FilePresenter, UploadPresenter};
+use Illuminate\Support\Carbon;
 
 class UploadController
 {
@@ -60,8 +61,61 @@ class UploadController
 
     public function finish(array $params): array
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['upload_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No upload_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "upload_id is not a valid upload ID.");
+        }
+
+        $name = $params['name'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                // resisting the urge to make a Faceless Men reference
+                "No name provided.");
+        if ( ! is_string($name)) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "name must be a string.");
+        }
+
+        $tags = $params['tags'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No tags provided.");
+        if ( ! is_array($tags) || Arr::any($tags, fn($t) => ! is_string($t))) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "tags must be an array of strings.");
+        }
+        $tags = new \Ds\Set($tags);
+
+        $relevanceTimestamp = $params['relevance_timestamp'] ?? null;
+        if ($relevanceTimestamp !== null) {
+            try {
+                $relevanceTimestamp = Carbon::createFromFormat(
+                    Carbon::ATOM, $relevanceTimestamp);
+            } catch (\Throwable $exc) {
+                throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                    "relevance_timestamp must be a valid RFC 3339 timestamp.");
+            }
+        }
+
+        try {
+            $file = $this->uploads->finish($id,
+                name: $name, tags: $tags, relevanceTimestamp: $relevanceTimestamp);
+        } catch (NotFoundException $exc) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "upload_id does not correspond to an in-progress upload.");
+        } catch (SizeLimitExceededException $exc) {
+            throw new RpcError(RpcConstants::ERROR_SIZE_LIMIT_EXCEEDED,
+                "The upload file size exceeds a limit" .
+                    // TODO[pn]: See UploadService
+                    " or does not match the size provided initially" .
+                ".");
+        }
+
+        $presenter = new FilePresenter();
+        return $presenter->present($file, null);
     }
 
     public function reportProgress(array $params)

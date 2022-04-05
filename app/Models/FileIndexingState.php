@@ -10,6 +10,7 @@ class FileIndexingState extends Model
     protected $casts = [
         'state' => EnumCast::class . ':' . IndexingState::class,
         'error_context' => 'json',
+        'last_activity' => 'datetime',
     ];
 
     public $incrementing = false;

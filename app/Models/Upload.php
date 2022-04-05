@@ -13,9 +13,12 @@ class Upload extends RandomIdModel
     public $timestamps = false;
 
     protected $casts = [
-        'progress' => 'float',
         'hash' => StringableCast::class . ':' . Sha1Hash::class,
         'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
+        'upload_start' => 'datetime',
+        'progress' => 'float',
+        'last_progress_report' => 'datetime',
+        'pending_removal_since' => 'datetime',
     ];
 
     use Prunable;

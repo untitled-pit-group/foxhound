@@ -19,6 +19,8 @@ class File extends RandomIdModel
         'hash' => StringableCast::class . ':' . Sha1Hash::class,
         'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
         'tags' => StringArray::class,
+        'upload_timestamp' => 'datetime',
+        'relevance_timestamp' => 'datetime',
     ];
 
     public function indexingState()

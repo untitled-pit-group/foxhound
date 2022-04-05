@@ -5,9 +5,12 @@ Primary PIFS backend.
 ## Setup
 
 Install PHP 8.1, PostgreSQL 14, and Redis 6.2; have the last two running. Have
-[Composer][] handy.
+[Composer][] handy. Within PHP, a nice-to-have performance optimization is to
+have the non-standard [php-ds][] module installed, however it's not a
+requirement.
 
 [Composer]: https://getcomposer.org/
+[php-ds]: https://github.com/php-ds/ext-ds
 
 Clone this repo. Run `composer install`.
 

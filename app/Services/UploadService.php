@@ -101,4 +101,61 @@ class UploadService
     {
         return $this->uploads->select(stale: false, buried: false);
     }
+
+    /**
+     * Transform an Upload whose file is fully stored in GCS, into a File with
+     * the given extra metadata.
+     *
+     * @link /docs/API.rst#uploads.finish
+     * @throws UploadInProgressException if the upload has not yet finished,
+     *         i.e., the GCS object does not exist
+     */
+    public function finish(
+        int $uploadId,
+        string $name,
+        \Ds\Set $tags,
+        ?\DateTimeInterface $relevanceTimestamp
+    ): File {
+        $upload = Upload::where('id', $uploadId)->first();
+        if ($upload === null) {
+            throw new NotFoundException();
+        }
+
+        $gcsUrl = $this->hashToGcsUrl($upload->hash);
+        try {
+            $objectInfo = $this->gcs->getInfo($gcsUrl);
+        } catch (NotFoundException $exc) {
+            throw new UploadInProgressException($upload);
+        }
+
+        $size = intval($objectInfo['size']);
+        if ($size > $upload->length || $size > self::MAX_UPLOAD_SIZE_BYTES) {
+            // TODO[pn]: This should delete the object in GCS.
+            throw new SizeLimitExceededException();
+        } else if ($size !== $upload->length) {
+            // TODO[pn]: This should have a more specific exception and a
+            // related error in the API doc.
+            // TODO[pn]: This should delete the object in GCS.
+            throw new SizeLimitExceededException();
+        }
+
+        $file = File::fromUpload($upload);
+        $file->name = $name;
+        $file->tags = $tags->toArray();
+        $file->relevance_timestamp = $relevanceTimestamp;
+
+        app('db')->transaction(function () use ($upload, $file) {
+            $file->generateId();
+            $file->save();
+            $upload->delete();
+        });
+
+        // TODO[pn]: This should enqueue indexing. Skipping until indexing is
+        // actually implemented.
+        // TODO[pn]: Indexing must check whether the file SHA-1 matches, given
+        // that we can't do that here because this part is synchronous.
+        // See issue #25.
+
+        return $file;
+    }
 }
