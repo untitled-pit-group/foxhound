@@ -4,7 +4,7 @@ use App\Rpc\RpcError;
 use App\Services\UploadService;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\{Id, Math, RpcConstants};
+use App\Support\{Id, Math, NotImplementedException, RpcConstants};
 
 class UploadController
 {
@@ -42,5 +42,29 @@ class UploadController
                 "This file has already been uploaded.",
                 Id::encode($exc->file->id));
         }
+    }
+
+    public function cancel(array $params): array
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
+    public function finish(array $params): array
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
+    public function reportProgress(array $params): array
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
+    public function getProgress(array $params): array
+    {
+        // TODO
+        throw new NotImplementedException();
     }
 }
