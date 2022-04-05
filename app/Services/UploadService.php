@@ -6,7 +6,7 @@ use App\Services\GcloudStorageService\GcsUrl;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
 use App\Support\{NotFoundException, Sha1Hash};
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Collection};
 
 class UploadService
 {
@@ -95,5 +95,10 @@ class UploadService
             throw new NotFoundException();
         }
         return $upload->progress;
+    }
+
+    public function listInProgress(): Collection
+    {
+        return $this->uploads->select(stale: false, buried: false);
     }
 }

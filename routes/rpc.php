@@ -13,6 +13,7 @@ $rpc->register('test.hello_world', function (array $params) {
         'uploads.finish' => 'UploadController@finish',
         'uploads.report_progress' => 'UploadController@reportProgress',
         'uploads.progress' => 'UploadController@getProgress',
+        'uploads.list' => 'UploadController@listUploads',
         'files.list' => 'FileController@listFiles',
         'files.check_indexing_progress' => 'FileController@checkIndexingProgress',
         'files.get_indexing_error' => 'FileController@getIndexingError',

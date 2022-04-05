@@ -57,7 +57,7 @@ class UploadRepo
         $staleThreshold = Carbon::now()
             ->sub(self::UPLOAD_STALE_THRESHOLD_SEC, 'seconds');
         return Upload::where('upload_start', '<', $staleThreshold)
-            ->orWhereNotNull('pending_removal_since', 'is not null')
+            ->orWhereNotNull('pending_removal_since')
             ->get();
     }
 
@@ -80,5 +80,20 @@ class UploadRepo
         $threshold = $createdAt->sub(self::UPLOAD_BURIED_THRESHOLD_SEC, 'seconds');
         return $uploads->filter(
             fn($upload) => $upload->pending_removal_since->isBefore($threshold));
+    }
+
+    public function select(bool $stale = false, bool $buried = false): Collection
+    {
+        $query = Upload::query();
+        $reference = Carbon::now();
+        $where = [ ];
+        if ( ! $stale) {
+            $threshold = $reference->sub(self::UPLOAD_STALE_THRESHOLD_SEC, 'seconds');
+            $query = $query->where('upload_start', '>=', $threshold);
+        }
+        if ( ! $buried) {
+            $query = $query->orWhereNotNull('pending_removal_since');
+        }
+        return $query->get();
     }
 }

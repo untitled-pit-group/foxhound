@@ -6,6 +6,7 @@ use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
 use App\Support\{Id, Math, NotFoundException, NotImplementedException,
     RpcConstants, Sha1Hash};
+use App\Support\Presenters\UploadPresenter;
 
 class UploadController
 {
@@ -109,5 +110,12 @@ class UploadController
             throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
                 "upload_id does not correspond to an in-progress upload.");
         }
+    }
+
+    public function listUploads(array $params): array
+    {
+        $uploads = $this->uploads->listInProgress();
+        $presenter = new UploadPresenter();
+        return $uploads->map($presenter->present(...))->toArray();
     }
 }

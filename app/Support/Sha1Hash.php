@@ -29,13 +29,13 @@ class Sha1Hash
     }
 
     // MARK: StringableCast conformance
-    public static function fromString(string $raw): self
+    public static function fromString($raw): self
     {
-        if (substr($raw, 0, 2) !== '\x' || strlen($raw) !== 42) {
-            throw new \InvalidArgumentException();
-        }
-        $hex = substr($raw, 2);
-        return new self(hex2bin($hex));
+        // HACK[pn]: This should be refactored preferrably, this isn't exactly
+        // a string by this point.
+        $raw = stream_get_contents($raw);
+        $raw = pg_unescape_bytea($raw);
+        return new self($raw);
     }
     public function toString(): string
     {
