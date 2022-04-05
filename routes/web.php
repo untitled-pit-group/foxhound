@@ -13,5 +13,13 @@
 |
 */
 
+$router->options('/auth-token', [
+    'middleware' => [App\Http\Middleware\CorsAllowUnconditional::class],
+    fn() => new Illuminate\Http\Response(),
+]);
+$router->options('/rpc', [
+    'middleware' => [App\Http\Middleware\CorsAllowUnconditional::class],
+    fn() => new Illuminate\Http\Response(),
+]);
 $router->post('/auth-token', 'TokenController@mintToken');
 $router->post('/rpc', 'RpcController@handleCall');
