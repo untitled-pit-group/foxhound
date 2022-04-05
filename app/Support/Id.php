@@ -3,7 +3,7 @@ namespace App\Support;
 
 class Id
 {
-    const MIN = -9223372036854775808;
+    const MIN = -9223372036854775807;
     const MAX = 9223372036854775807;
     public static function generate(): int
     {

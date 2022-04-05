@@ -27,7 +27,7 @@ class UploadRepo
         $upload->gcs_path = $gcsPath;
         $upload->name = $name;
         $upload->upload_start = new Carbon('now');
-        $uplaod->progress = 0.0;
+        $upload->progress = 0.0;
         $upload->last_progress_report = null;
         $this->inTransaction(function () use ($upload) {
             $upload->generateId();

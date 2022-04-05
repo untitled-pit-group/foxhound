@@ -9,7 +9,7 @@ trait OptionallyBeginsTransaction
     protected function inTransaction(\Closure $callback)
     {
         if ($this->databaseTransactionsManager->getTransactions()->isEmpty()) {
-            return DB::transaction($callback);
+            return app('db')->transaction($callback);
         } else {
             return $callback();
         }

@@ -31,13 +31,14 @@ class Sha1Hash
     // MARK: StringableCast conformance
     public static function fromString(string $raw): self
     {
-        if (strlen($raw) !== 20) {
+        if (substr($raw, 0, 2) !== '\x' || strlen($raw) !== 42) {
             throw new \InvalidArgumentException();
         }
-        return new self($raw);
+        $hex = substr($raw, 2);
+        return new self(hex2bin($hex));
     }
     public function toString(): string
     {
-        return $this->raw;
+        return '\x' . bin2hex($this->raw);
     }
 }

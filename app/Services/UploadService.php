@@ -36,7 +36,7 @@ class UploadService
 
         $url = $this->hashToGcsUrl($hash);
 
-        $upload = DB::transaction(function () use ($hash, $length, $name, $url) {
+        $upload = app('db')->transaction(function () use ($hash, $length, $name, $url) {
             $this->checkHashConflicts($hash, $length);
             return $this->uploads->createEmpty(
                 hash: $hash,
@@ -50,23 +50,19 @@ class UploadService
         });
 
         $url = $this->gcs->signedUploadUrl($url);
-        return [$upload, $url]
-        // TODO: Make a new Upload with the relevant data and persist it. Don't
-        // forget to set its ID properly.
-        // TODO: Generate the GCS URL based on the config param.
         return [$upload, $url];
     }
 
     protected function checkHashConflicts(Sha1Hash $hash, int $length): void
     {
-        $file = File::where('hash', $hash->raw)->first();
+        $file = File::where('hash', $hash->toString())->first();
         if ($file !== null) {
             // TODO[pn]: hash collision
             //if ($file->length !== $length) {
             throw new AlreadyUploadedException($file);
         }
 
-        $upload = Upload::where('hash', $hash->raw)->first();
+        $upload = Upload::where('hash', $hash->toString())->first();
         if ($upload !== null) {
             // TODO[pn]: hash collision
             //if ($upload->length !== $length) {

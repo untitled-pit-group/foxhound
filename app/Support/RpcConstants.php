@@ -11,4 +11,7 @@ class RpcConstants
         ERROR_UNAUTHORIZED = self::H + Response::HTTP_UNAUTHORIZED,
         ERROR_NOT_FOUND = self::H + Response::HTTP_NOT_FOUND,
         ERROR_CONFLICT = self::H + Response::HTTP_CONFLICT;
+
+    public const
+        ERROR_INVALID_PARAMS = -32602;
 }

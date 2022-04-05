@@ -4,7 +4,7 @@ use App\Rpc\RpcError;
 use App\Services\UploadService;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\{Id, Math, NotImplementedException, RpcConstants};
+use App\Support\{Id, Math, NotImplementedException, RpcConstants, Sha1Hash};
 
 class UploadController
 {
@@ -24,7 +24,13 @@ class UploadController
                 "transmitted over JSON.");
         }
         try {
-            [$upload, $url] = $uploads->begin(
+            $hash = Sha1Hash::fromHex($hash);
+        } catch (\InvalidArgumentException $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "The hash provided is not a valid SHA-1 hash in hex format.");
+        }
+        try {
+            [$upload, $url] = $this->uploads->begin(
                 hash: $hash, length: $length, name: $name);
             return [
                 'upload_id' => Id::encode($upload->id),
