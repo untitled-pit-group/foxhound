@@ -1,11 +1,15 @@
 <?php declare(strict_types=1);
 namespace App\Http\Controllers;
+use App\Http\Middleware\CorsAllowUnconditional;
 use App\Services\AuthTokenService;
 use Illuminate\Http\{Request, Response};
 
 class TokenController extends Controller
 {
-    public function __construct(private AuthTokenService $authTokens) { }
+    public function __construct(private AuthTokenService $authTokens)
+    {
+        $this->middleware(CorsAllowUnconditional::class);
+    }
 
     public function mintToken(Request $request): Response
     {
