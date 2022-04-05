@@ -3,8 +3,9 @@ namespace App\Http\Rpc;
 use App\Models\{File, FileIndexingState};
 use App\Rpc\RpcError;
 use App\Services\GcloudStorageService;
-use App\Support\{Id, NotImplementedException, RpcConstants};
+use App\Support\{Arr, Id, NotImplementedException, RpcConstants};
 use App\Support\Presenters\FilePresenter;
+use Illuminate\Support\Carbon;
 
 class FileController
 {
@@ -14,7 +15,7 @@ class FileController
     {
         // HACK[pn]: Doesn't seem that Eloquent can do eager loading of a
         // hasOne relationship (it seems to only do the inverse), so we take the
-        // O(2N) hit here.
+        // O(2N) hit here but do it in two queries instead of N.
         $files = File::all();
         $fileIndexingStates = FileIndexingState::all();
         foreach ($fileIndexingStates as $fileIndexingState) {
@@ -45,9 +46,7 @@ class FileController
                 "file_id does not correspond to a file.");
         }
 
-        $fileIndexingState = FileIndexingState::where('id', $id)
-            ->first()
-            ?->indexing_state;
+        $fileIndexingState = $file->indexingState?->indexing_state;
         if ($fileIndexingState === null) {
             $fileIndexingState = FileIndexingState\IndexingState::QUEUED;
         }
@@ -79,10 +78,9 @@ class FileController
             throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
                 "file_id does not correspond to a file.");
         }
-        $indexingState = FileIndexingState::where('id', $id)->first();
 
         $presenter = new FilePresenter();
-        return $presenter->present($file, $indexingState);
+        return $presenter->present($file, $file->indexingState);
     }
 
     public function requestDownload(array $params): string
@@ -93,7 +91,7 @@ class FileController
         try {
             $id = Id::decode($id);
         } catch (\Throwable $exc) {
-            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
                 "file_id is not a valid file ID.");
         }
 
@@ -109,13 +107,96 @@ class FileController
 
     public function editFile(array $params): array
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['file_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No file_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "file_id is not a valid file ID.");
+        }
+
+        $file = File::where('id', $id)->first();
+        if ($file === null) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "file_id does not correspond to a file.");
+        }
+
+        if (array_key_exists('name', $params)) {
+            if ( ! is_string($params['name'])) {
+                throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                    "name must be a string.");
+            }
+            $file->name = $params['name'];
+        }
+
+        if (array_key_exists('tags', $params)) {
+            $tags = $params['tags'];
+            if ( ! is_array($tags) || Arr::any($tags, fn($t) => ! is_string($t))) {
+                throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                    "tags must be an array of strings.");
+            }
+            $file->tags = $tags;
+        }
+
+        if (array_key_exists('relevance_timestamp', $params)) {
+            $relevanceTimestamp = $params['relevance_timestamp'];
+            if ($relevanceTimestamp !== null) {
+                try {
+                    $relevanceTimestamp = Carbon::createFromFormat(
+                        Carbon::ATOM, $relevanceTimestamp);
+                } catch (\Throwable $exc) {
+                    throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                        "relevance_timestamp must be an RFC 3339 timestamp.");
+                }
+            }
+            $file->relevance_timestamp = $relevanceTimestamp;
+        }
+
+        $file->save();
+
+        $presenter = new FilePresenter();
+        return $presenter->present($file, $file->indexingState);
     }
 
     public function editTags(array $params): array
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['file_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No file_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "file_id is not a valid file ID.");
+        }
+
+        $file = File::where('id', $id)->first();
+        if ($file === null) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "file_id does not correspond to a file.");
+        }
+
+        $notString = fn($t) => ! is_string($t);
+        $add = $params['add'] ?? [ ];
+        if (Arr::any($add, $notString)) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "add must be an array of strings.");
+        }
+        $remove = $params['remove'] ?? [ ];
+        if (Arr::any($remove, $notString)) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "remove must be an array of strings.");
+        }
+
+        $tags = new \Ds\Set($file->tags);
+        $tags->remove(...$remove);
+        $tags->add(...$add);
+        $file->tags = $tags->toArray();
+        $file->save();
+
+        $presenter = new FilePresenter();
+        return $presenter->present($file, $file->indexingState);
     }
 }
