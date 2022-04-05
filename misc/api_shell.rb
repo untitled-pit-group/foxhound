@@ -12,6 +12,28 @@ end
 
 class ResponseError < ::RuntimeError
 end
+class RawServerError < ::RuntimeError
+  def initialize(response)
+    super("#{response['exception']}: #{response['message']}")
+    set_backtrace Thread.current.backtrace[1..]
+    @server_exception = response
+  end
+  def to_s
+    msg = super
+    e = @server_exception
+    msg += "\n<remote> at #{e['file']}(#{e['line']})"
+    e['trace'].each do |frame|
+      callee = frame['function']
+      callee = if frame.has_key? 'class' then
+        "#{frame['class']}#{frame['type']}#{frame['function']}"
+      else
+        frame['function']
+      end
+      msg += "\n         #{frame['file']}(#{frame['line']}): #{callee}"
+    end
+    msg
+  end
+end
 class ServerError < ::RuntimeError
   def initialize(error)
     super("#{error['code']}: #{error['message']}")
@@ -59,7 +81,7 @@ class MockClient
   def new_rpc_request(method, params)
     request = Net::HTTP::Post.new '/rpc'
     request['Authorization'] = "Bearer #{@token}"
-    request['Accept'] = 'application/json'
+    request['Accept'] = 'application/json, text/plain;q=0.9'
     request['Content-Type'] = 'application/json; charset=UTF-8'
     request.body = {
       :jsonrpc => "2.0",
@@ -78,6 +100,7 @@ class MockClient
       rescue
         raise ResponseError, "Bad JSON: #{response.body}"
       end
+      raise RawServerError.new(data) if data.has_key?('exception')&& data.has_key?('trace')
       raise ServerError.new(data['error']) if data.has_key? 'error'
       data['result']
     else
@@ -85,10 +108,11 @@ class MockClient
     end
   end
 
-  def call(method, **params)
+  def call(method, raw: false, **params)
     mint_token! if @token.nil?
     request = new_rpc_request(method, params)
     response = @http.request request
+    return response if raw
     parse_response(response)
   end
 
