@@ -13,6 +13,7 @@ class Upload extends RandomIdModel
     public $timestamps = false;
 
     protected $casts = [
+        'progress' => 'float',
         'hash' => StringableCast::class . ':' . Sha1Hash::class,
         'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
     ];

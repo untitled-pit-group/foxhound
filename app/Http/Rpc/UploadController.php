@@ -4,7 +4,8 @@ use App\Rpc\RpcError;
 use App\Services\UploadService;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\{Id, Math, NotImplementedException, RpcConstants, Sha1Hash};
+use App\Support\{Id, Math, NotFoundException, NotImplementedException,
+    RpcConstants, Sha1Hash};
 
 class UploadController
 {
@@ -62,15 +63,51 @@ class UploadController
         throw new NotImplementedException();
     }
 
-    public function reportProgress(array $params): array
+    public function reportProgress(array $params)
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['upload_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No upload_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "upload_id is not a valid upload ID.");
+        }
+        $progress = $params['progress_length'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No progress_length provided.");
+        if ( ! is_int($progress)) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "progress_length must be an integer.");
+        }
+
+        try {
+            $this->uploads->setProgress($id, $progress);
+        } catch (NotFoundException $exc) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "upload_id does not correspond to an in-progress upload.");
+        }
+        return true;
     }
 
-    public function getProgress(array $params): array
+    public function getProgress(array $params)
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['upload_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No upload_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "upload_id is not a valid upload ID.");
+        }
+
+        try {
+            return $this->uploads->getProgress($id);
+        } catch (NotFoundException $exc) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "upload_id does not correspond to an in-progress upload.");
+        }
     }
 }

@@ -5,7 +5,8 @@ use App\Repositories\UploadRepo;
 use App\Services\GcloudStorageService\GcsUrl;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\Sha1Hash;
+use App\Support\{NotFoundException, Sha1Hash};
+use Illuminate\Support\Carbon;
 
 class UploadService
 {
@@ -68,5 +69,31 @@ class UploadService
             //if ($upload->length !== $length) {
             throw new UploadInProgressException($upload);
         }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function setProgress(int $uploadId, int $progressBytes): void
+    {
+        $upload = Upload::where('id', $uploadId)->first();
+        if ($upload === null) {
+            throw new NotFoundException();
+        }
+        $upload->progress = $progressBytes / $upload->length;
+        $upload->last_progress_report = Carbon::now();
+        $upload->save();
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getProgress(int $uploadId): float
+    {
+        $upload = Upload::where('id', $uploadId)->first();
+        if ($upload === null) {
+            throw new NotFoundException();
+        }
+        return $upload->progress;
     }
 }
