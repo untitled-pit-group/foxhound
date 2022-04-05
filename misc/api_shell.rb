@@ -55,7 +55,7 @@ end
 
 class MockClient
   def initialize
-    @http = Net::HTTP.new('127.0.0.1', 9080)
+    @http = Net::HTTP.start('127.0.0.1', 9080)
     @secret = load_secret!
     @token = nil
   end
