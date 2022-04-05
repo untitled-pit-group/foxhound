@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 
 class FilePresenter
 {
-    private static function indexingStateInteger(IndexingState $state): int
+    public function presentIndexingState(IndexingState $state): int
     {
         return match ($state) {
             IndexingState::QUEUED => 0,
@@ -23,7 +23,7 @@ class FilePresenter
     {
         $indexingState = $fileIndexingState?->state;
         $indexingState ??= IndexingState::QUEUED;
-        $indexingState = self::indexingStateInteger($indexingState);
+        $indexingState = $this->presentIndexingState($indexingState);
 
         $repr = [
             'id' => Id::encode($file->id),

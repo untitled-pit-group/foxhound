@@ -18,11 +18,6 @@ class UploadService
         private UploadRepo $uploads,
     ) {}
 
-    protected function hashToGcsUrl(Sha1Hash $hash): GcsUrl
-    {
-        return $this->gcs->relativePathToAbsolutePath($hash->hex());
-    }
-
     /**
      * @throws AlreadyUploadedException
      * @throws SizeLimitExceededException
@@ -35,7 +30,7 @@ class UploadService
             throw new SizeLimitExceededException();
         }
 
-        $url = $this->hashToGcsUrl($hash);
+        $url = $this->gcs->hashToGcsUrl($hash);
 
         $upload = app('db')->transaction(function () use ($hash, $length, $name, $url) {
             $this->checkHashConflicts($hash, $length);
@@ -121,7 +116,7 @@ class UploadService
             throw new NotFoundException();
         }
 
-        $gcsUrl = $this->hashToGcsUrl($upload->hash);
+        $gcsUrl = $this->gcs->hashToGcsUrl($upload->hash);
         try {
             $objectInfo = $this->gcs->getInfo($gcsUrl);
         } catch (NotFoundException $exc) {

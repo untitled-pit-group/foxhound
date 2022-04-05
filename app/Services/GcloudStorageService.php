@@ -4,7 +4,7 @@ use Google\Cloud\Core\Exception\NotFoundException as GcloudNotFoundException;
 use Google\Cloud\Storage\{StorageClient, StorageObject};
 use Illuminate\Support\Carbon;
 use App\Services\GcloudStorageService\GcsUrl;
-use App\Support\NotFoundException;
+use App\Support\{NotFoundException, Sha1Hash};
 
 /**
  * All of the methods on this class resolve file paths relative to the
@@ -42,6 +42,14 @@ class GcloudStorageService
     }
 
     /**
+     * Transform a Sha1Hash into an absolute GCS {@code gs://} URL.
+     */
+    public function hashToGcsUrl(Sha1Hash $hash): GcsUrl
+    {
+        return $this->relativePathToAbsolutePath($hash->hex());
+    }
+
+    /**
      * Return whether the specified file exists in the storage bucket.
      *
      * Checking this can be prone to race conditions if other services can
@@ -50,6 +58,19 @@ class GcloudStorageService
     public function exists(GcsUrl $url): bool
     {
         return $this->urlToObjectInstance($url)->exists();
+    }
+
+    /**
+     * Generate a signed URL that can be used to download the file. The
+     * generated URL is valid for 24 hours.
+     */
+    public function signedDownloadUrl(GcsUrl $url): string
+    {
+        return $this->urlToObjectInstance($url)
+            ->signedUrl(
+                Carbon::now()->add(24, 'hours'),
+                [ 'version' => 'v4' ],
+            );
     }
 
     /**
