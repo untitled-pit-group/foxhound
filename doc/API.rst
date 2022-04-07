@@ -155,10 +155,7 @@ uploads.begin
         ``uploads.finish`` and intended for display purposes to clients other
         than the requester which are interested in ongoing upload progress.
 :Response:
-    upload_id
-        An upload ID. This is different from a file ID.
-    upload_url
-        A signed GCS URL to perform the upload to.
+    An Upload_ with a ``gcs_url`` field present.
 :Errors:
     1000 size_limit_exceeded
         The server is configured to not accept files this large, or the file
@@ -212,13 +209,9 @@ uploads.finish
         The relevance timestamp for the file, as specified by the user, in the
         same format as a Timestamp_.
 :Response: A File_ object, corresponding to the upload. The File is guaranteed
-    to have ``indexing_state`` of 0.
+    to have ``indexing_state`` of 0. The File will have a ``type`` of ``null``
+    until indexing is begun.
 :Errors:
-    -32602 invalid_params
-        A parameter was absent or of the wrong type (e.g., ``tags`` not being
-        an array of strings, or ``relevance_timestamp`` not being in RFC 3339
-        format.) If the ``data`` field is present, it lists an array
-        of the field names that were invalid.
     1000 size_limit_exceeded
         The file uploaded exceeds the maximum size threshold that the server
         is configured to accept. This can only occur if the client provides
@@ -229,15 +222,14 @@ uploads.finish
     2404 not_found
         The ``upload_id`` provided does not correspond to an in-progress upload.
 
-After calling this method, ``files.check_indexing_progress`` can be called
-periodically to check the processing status of this file.
+After calling this method, ``files.get`` can be called periodically to check
+the processing status and the resolved type of this file.
 
 ==============
 uploads.cancel
 ==============
 
-:Summary: Request the server to clean up any state associated with this file,
-    including deleting any partial uploaded data from GCS.
+:Summary: Request the server to clean up any state associated with this file.
 :Params:
     upload_id
         The upload ID, as returned by ``uploads.begin``.
@@ -257,8 +249,6 @@ only with user consent or under irreparable circumstances.
 uploads.report_progress
 =======================
 
-*Note:* This is a notification endpoint, not a method call.
-
 :Summary: Store a progress report on the server to present to other clients.
 :Params:
     upload_id
@@ -266,6 +256,7 @@ uploads.report_progress
     progress_length
         The number of bytes currently uploaded. The progress indication is
         calculated using the ``length`` provided at the beginning of uploading.
+:Response: ``null``
 :Errors:
     2404 not_found
         The ``upload_id`` is invalid.
@@ -289,14 +280,7 @@ uploads.list
 
 :Summary: List all in-progress uploads.
 :Params: None.
-:Response: An array of upload objects, containing these keys:
-
-    id
-        The upload ID.
-    name
-        The display filename provided at the beginning of the upload.
-    progress
-        A float value in range [0, 1] representing the upload progress.
+:Response: An array of Upload_ objects.
 :Errors: None.
 
 ==========
@@ -309,20 +293,6 @@ files.list
 :Errors: None.
 
 TODO: This could probably use pagination.
-
-=============================
-files.check_indexing_progress
-=============================
-
-:Summary: Return information on the current indexing state of the uploaded
-    document.
-:Params:
-    file_id
-        The file ID.
-:Response: An integer indexing state, as per documentation of File_.
-:Errors:
-    2404 not_found
-        The ``file_id`` is invalid.
 
 ========================
 files.get_indexing_error
@@ -388,17 +358,16 @@ files.edit
     name
         The new filename of the file.
     tags
-        An array of string tags. This will replace any tags previously set so
-        should be used with care to prevent race conditions from losing data.
+        An array (set) of string tags. This will replace any tags previously
+        set so should be used with care to prevent race conditions from losing
+        data.
     relevance_timestamp
-        A Timestamp_ or ``null`` if not set.
-:Response: The File_ object, after applying any tag changes.
+        A Timestamp_. ``null`` to unset.
+
+    The ``name``, ``tags`` and ``relevance_timestamp`` are optional; if not
+    provided, the respective metadata attribute will not be changed.
+:Response: The File_ object, after applying any metadata changes.
 :Errors:
-    -32602 invalid_params
-        A parameter was absent or of the wrong type (e.g., ``tags`` not being
-        an array of strings, or ``relevance_timestamp`` not being in RFC 3339
-        format.) If the ``data`` field is present, it lists an array
-        of the field names that were invalid.
     2404 not_found
         The ``file_id`` is invalid.
 
@@ -452,6 +421,26 @@ datetimestamp with second precision. The timestamp MUST be in the UTC timezone
 and therefore the timezone suffix MUST be ``Z``. The date/time separator MUST
 be the symbol ``T``.
 
+------
+Upload
+------
+
+Fields:
+
+id
+    The upload ID.
+hash
+    The SHA-256 hash of the file in hex form.
+progress
+    A float in the range [0, 1] indicating the upload progress, as reported by
+    the client.
+name
+    The tentative name of the upload. There's currently no mechanism to change
+    this during the upload.
+gcs_url
+    The signed GCS upload URL to perform the upload to. This field is only
+    present for Uploads returned from `uploads.begin`_.
+
 ----
 File
 ----
@@ -461,9 +450,10 @@ Fields:
 id
     The file ID.
 name
-    The file's literal name, as set during the upload.
+    The file's literal display name.
 tags
-    An array of string tags.
+    An array of string tags. The order of the tags is not significant; this
+    should be treated as a degenerate representation of a set.
 upload_timestamp
     An Timestamp_ at which the upload of the file was begun.
 relevance_timestamp
@@ -472,10 +462,11 @@ relevance_timestamp
 length
     The size of the file in bytes.
 hash
-    The SHA-256 hash of the file.
+    The SHA-256 hash of the file in hex form.
 type
     Either ``document``, ``plain`` or ``media``, depending on the document's
-    specifics. This also determines the kind of search results returned.
+    specifics. This also determines the kind of search results returned. While
+    ``indexing_state`` is 0, this can be ``null`` instead.
 indexing_state
     An integer, as per below.
 removal_deadline
@@ -504,6 +495,12 @@ If the file enters the -1 state, it becomes pending for removal as though it
 was uploaded but not indexed, and its ``removal_deadline`` is set to 24 hours
 after the error occured. The particular error can be obtained using
 ``files.get_indexing_error``.
+
+As a notable edge case, if the file has a different SHA-256 hash than is
+expected, such an error will be detected at stage 0 *and will cause the file's
+hash to be changed in the database and in the GCS URL* so that the upload can
+be retried. In either case the file is treated as corrupt and scheduled for
+removal as it would be in cases of other indexing errors.
 
 ------------
 SearchResult
