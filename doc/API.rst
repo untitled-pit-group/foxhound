@@ -509,73 +509,27 @@ after the error occured. The particular error can be obtained using
 SearchResult
 ------------
 
-An object with one and only one of these fields present:
-
-media
-    An array of `SearchResult.Media`_ objects.
-document
-    An array of `SearchResult.Document`_ objects.
-plain
-    An array of `SearchResult.Plain`_ objects.
-
-In the interest of compactness, the particular search result fields are
-abbreviated: ``i`` is short for "ID", ``f`` is short for "fragment", ``r`` is
-short for "ranges", and ``p``, where applicable, is short for ``position``.
-
-^^^^^^^^^^^^^^^^^^
-SearchResult.Plain
-^^^^^^^^^^^^^^^^^^
+In the interest of compactness of representation, the fields are abbreviated.
 
 Fields:
 
 i
-    The document (`File`_) ID.
+    The File_ ID of the result.
 f
     An excerpt of the document text, providing context for the search result.
 r
-    An array of Range_ objects pointing into ``fragment``.
-
-Note that plain documents don't intend for more specific delineation of position
-short of a direct full search of the document, and given that, no more
-particular locators are provided and the ``p`` field is absent.
-
-^^^^^^^^^^^^^^^^^^^^^
-SearchResult.Document
-^^^^^^^^^^^^^^^^^^^^^
-
-Fields:
-
-i
-    The document (`File`_) ID.
-f
-    An excerpt of the plaintext of the document, providing context for the
-    search result.
-r
-    An array of Range_ objects pointing into ``fragment``.
+    An array of Range_ objects pointing into ``f``.
 p
-    The integer number of the page in the document at which the ``fragment``
-    begins. This numbering is unrelated to non-standard PDF numbering schemes;
-    ``page`` of 1 always corresponds to the first page in document linear order,
-    whatever its assigned number.
-
-^^^^^^^^^^^^^^^^^^
-SearchResult.Media
-^^^^^^^^^^^^^^^^^^
-
-Fields:
-
-i
-    The document (`File`_) ID.
-f
-    An excerpt of the transcription of the media, providing context for the
-    search result.
-r
-    An array of Range_ objects pointing into ``fragment``.
-p
-    The timestamp in seconds at which ``fragment`` begins. This is determined
-    according to the PTS of the medium, when linearized by transcoding and
-    synthesizing PTSes if necessary (not provided by the upload.) This might
-    not be accurate for exotic media files.
+    Present only for files whose type is ``document``: The integer page number
+    of the page in the document at which ``f`` begins. ``p`` of 1 always
+    corresponds to the first page in document linear order, even if the
+    numbering scheme is customised.
+t
+    Present only for files whose type is ``media``: The float second timestamp
+    at which ``f`` is heard. This is determined according to the PTS of the
+    medium, when linearized by transcoding and synthesizing PTSes if necessary
+    (not provided by the upload.) This might not be accurate for exotic media
+    files.
 
 -----
 Range
