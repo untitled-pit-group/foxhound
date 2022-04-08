@@ -8,6 +8,9 @@ class EnumCast implements CastsAttributes
 
     public function get($model, string $key, $value, array $attributes)
     {
+        if ($value === null) {
+            return null;
+        }
         return ($this->enumClass)::from($value);
     }
 

@@ -36,9 +36,7 @@ class FilePresenter
             'length' => $file->length,
             'hash' => $file->hash->hex(),
             'indexing_state' => $indexingState,
-
-            // TODO: See issue #26. No database representation for file type yet.
-            'type' => 'plain',
+            'type' => $file->type?->value,
         ];
 
         if ($fileIndexingState?->state === IndexingState::ERROR) {

@@ -2,10 +2,11 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Events\FileDeleting;
+use App\Models\File\FileType;
 use App\Models\Support\RandomIdModel;
 use App\Services\GcloudStorageService\GcsUrl;
 use App\Support\Sha1Hash;
-use App\Support\Db\StringableCast;
+use App\Support\Db\{EnumCast, StringableCast};
 use App\Support\Postgres\StringArray;
 
 class File extends RandomIdModel
@@ -21,6 +22,7 @@ class File extends RandomIdModel
         'tags' => StringArray::class,
         'upload_timestamp' => 'datetime',
         'relevance_timestamp' => 'datetime',
+        'type' => EnumCast::class . ':' . FileType::class,
     ];
 
     public function indexingState()
@@ -38,6 +40,7 @@ class File extends RandomIdModel
         $file->upload_timestamp = $upload->upload_start;
         $file->tags = [];
         $file->relevance_timestamp = null;
+        $file->type = null;
         return $file;
     }
 }
