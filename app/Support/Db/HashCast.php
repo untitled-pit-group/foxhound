@@ -16,6 +16,9 @@ class HashCast implements CastsAttributes
 {
     public function get($model, string $key, $value, array $attributes)
     {
+        if ($value === null) {
+            return null;
+        }
         try {
             return Sha256Hash::fromString($value);
         } catch (\InvalidArgumentException $exc) {
@@ -25,6 +28,9 @@ class HashCast implements CastsAttributes
 
     public function set($model, string $key, $value, array $attributes)
     {
+        if ($value === null) {
+            return null;
+        }
         return $value->toString();
     }
 }

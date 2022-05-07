@@ -13,11 +13,17 @@ class StringableCast implements CastsAttributes
 
     public function get($model, string $key, $value, array $attributes)
     {
+        if ($value === null) {
+            return null;
+        }
         return ($this->class)::fromString($value);
     }
 
     public function set($model, string $key, $value, array $attributes)
     {
+        if ($value === null) {
+            return null;
+        }
         return $value->toString();
     }
 }
