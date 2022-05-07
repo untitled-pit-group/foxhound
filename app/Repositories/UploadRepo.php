@@ -112,4 +112,15 @@ class UploadRepo
 
         return $query;
     }
+
+    /**
+     * Mark this upload as buried. After {@link UPLOAD_BURIED_THRESHOLD_SEC}
+     * elapses, it will be removed from the database; until then, it won't be
+     * exposed via the API anymore.
+     */
+    public function bury(Upload $upload): void
+    {
+        $upload->pending_removal_since = Carbon::now();
+        $upload->save();
+    }
 }

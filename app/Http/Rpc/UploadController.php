@@ -51,10 +51,24 @@ class UploadController
         }
     }
 
-    public function cancel(array $params): array
+    public function cancel(array $params): void
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['upload_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No upload_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "upload_id is not a valid upload ID.");
+        }
+
+        try {
+            $this->uploads->cancel($id);
+        } catch (NotFoundException $exc) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "upload_id does not correspond to an in-progress upload.");
+        }
     }
 
     public function finish(array $params): array

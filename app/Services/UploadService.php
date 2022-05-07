@@ -40,9 +40,6 @@ class UploadService
                 gcsPath: $url,
                 name: $name,
             );
-
-            $url = $this->gcs->signedUploadUrl($url);
-            return [$upload, $url];
         });
 
         $url = $this->gcs->signedUploadUrl($url);
@@ -65,6 +62,33 @@ class UploadService
             // TODO[pn]: hash collision
             //if ($upload->length !== $length) {
             throw new UploadInProgressException($upload);
+        }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function cancel(int $uploadId): void
+    {
+        $upload = $this->uploads->get($uploadId);
+        if ($upload === null) {
+            throw new NotFoundException();
+        }
+
+        // Just bury the upload. If a GCS upload was in progress, it should be
+        // cleaned up in due time as ever.
+        $this->uploads->bury($upload);
+
+        // That said, if the upload was finished, cancel it properly regardless.
+        try {
+            $objectInfo = $this->gcs->getInfo($upload->gcs_path);
+            // TODO[pn]: Delete the object from GCS.
+        } catch (NotFoundException $exc) {
+            // noop. Let the cleanup job take care of this.
+            // TODO[pn]: Actually, in this case it should only be deleted if
+            // there's no other pending upload with this hash, and if there's
+            // no existing file with this hash. In either case the stale upload
+            // can be removed immediately.
         }
     }
 
