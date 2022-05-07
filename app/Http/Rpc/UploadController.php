@@ -52,7 +52,7 @@ class UploadController
         } catch (AlreadyUploadedException $exc) {
             throw new RpcError(RpcConstants::ERROR_CONFLICT,
                 "This file has already been uploaded.",
-                Id::encode($exc->file->id));
+                Id::encode($exc->conflictingFile->id));
         }
     }
 
