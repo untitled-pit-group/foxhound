@@ -5,7 +5,7 @@ use App\Repositories\UploadRepo;
 use App\Services\GcloudStorageService\GcsUrl;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
-use App\Support\{NotFoundException, Sha1Hash};
+use App\Support\{NotFoundException, Sha1Hash, Sha256Hash};
 use Illuminate\Support\{Carbon, Collection};
 
 class UploadService
@@ -19,12 +19,15 @@ class UploadService
     ) {}
 
     /**
+     * Note: Passing a {@link Sha1Hash} for {@param $hash} is deprecated.
+     *
+     * @param Sha256Hash|Sha1Hash $hash
      * @throws AlreadyUploadedException
      * @throws SizeLimitExceededException
      * @throws UploadInProgressException
      * @return [Upload, string $url]
      */
-    public function begin(Sha1Hash $hash, int $length, string $name): array
+    public function begin($hash, int $length, string $name): array
     {
         if ($length > self::MAX_UPLOAD_SIZE_BYTES) {
             throw new SizeLimitExceededException();
@@ -46,7 +49,10 @@ class UploadService
         return [$upload, $url];
     }
 
-    protected function checkHashConflicts(Sha1Hash $hash, int $length): void
+    /**
+     * @param Sha256Hash|Sha1Hash $hash
+     */
+    protected function checkHashConflicts($hash, int $length): void
     {
         $file = File::where('hash', $hash->toString())->first();
         if ($file !== null) {

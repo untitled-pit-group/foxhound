@@ -5,7 +5,7 @@ use App\Services\UploadService;
 use App\Services\UploadService\{AlreadyUploadedException,
     SizeLimitExceededException, UploadInProgressException};
 use App\Support\{Arr, Id, Math, NotFoundException, NotImplementedException,
-    RpcConstants, Sha1Hash};
+    RpcConstants, Sha1Hash, Sha256Hash};
 use App\Support\Presenters\{FilePresenter, UploadPresenter};
 use Illuminate\Support\Carbon;
 
@@ -27,10 +27,15 @@ class UploadController
                 "transmitted over JSON.");
         }
         try {
-            $hash = Sha1Hash::fromHex($hash);
+            $hash = Sha256Hash::fromHex($hash);
         } catch (\InvalidArgumentException $exc) {
-            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
-                "The hash provided is not a valid SHA-1 hash in hex format.");
+            try {
+                // TODO[pn]: Deprecated, remove this.
+                $hash = Sha1Hash::fromHex($hash);
+            } catch (\InvalidArgumentException $exc) {
+                throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                    "The hash provided is not a valid SHA-256 hash in hex format.");
+            }
         }
         try {
             [$upload, $url] = $this->uploads->begin(

@@ -2,7 +2,7 @@
 namespace App\Repositories;
 use App\Models\Upload;
 use App\Services\GcloudStorageService\GcsUrl;
-use App\Support\{Sha1Hash, Time};
+use App\Support\{Sha1Hash, Sha256Hash, Time};
 use App\Support\Mixin\OptionallyBeginsTransaction;
 use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Support\{Carbon, Collection};
@@ -15,8 +15,13 @@ class UploadRepo
         $this->databaseTransactionsManager = $dtm;
     }
 
+    /**
+     * Note: Passing a {@link Sha1Hash} for {@param $hash} is deprecated.
+     *
+     * @param Sha256Hash|Sha1Hash $hash
+     */
     public function createEmpty(
-        Sha1Hash $hash,
+        $hash,
         int $length,
         GcsUrl $gcsPath,
         string $name,
@@ -26,7 +31,7 @@ class UploadRepo
         $upload->length = $length;
         $upload->gcs_path = $gcsPath;
         $upload->name = $name;
-        $upload->upload_start = new Carbon('now');
+        $upload->upload_start = Carbon::now();
         $upload->progress = 0.0;
         $upload->last_progress_report = null;
         $this->inTransaction(function () use ($upload) {

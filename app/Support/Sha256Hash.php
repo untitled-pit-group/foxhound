@@ -2,12 +2,9 @@
 namespace App\Support;
 
 /**
- * A {@link Sha1Hash} represents a SHA-1 hash of a file.
- *
- * Important: This class exists due to a historic artefact of pn's stupidity
- * and is deprecated.
+ * A {@link Sha1Hash} represents a SHA-256 hash of a file.
  */
-class Sha1Hash
+class Sha256Hash
 {
     private function __construct(
         /**
@@ -18,9 +15,9 @@ class Sha1Hash
 
     public static function fromHex(string $hex): self
     {
-        if (strlen($hex) !== 40 ||
+        if (strlen($hex) !== 64 ||
             ($raw = hex2bin($hex)) === false ||
-            strlen($raw) !== 20) {
+            strlen($raw) !== 32) {
             throw new \InvalidArgumentException();
         }
         return new self($raw);

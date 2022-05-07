@@ -5,15 +5,14 @@ use Illuminate\Support\Carbon;
 use App\Events\UploadPruning;
 use App\Models\Support\RandomIdModel;
 use App\Services\GcloudStorageService\GcsUrl;
-use App\Support\Sha1Hash;
-use App\Support\Db\StringableCast;
+use App\Support\Db\{HashCast, StringableCast};
 
 class Upload extends RandomIdModel
 {
     public $timestamps = false;
 
     protected $casts = [
-        'hash' => StringableCast::class . ':' . Sha1Hash::class,
+        'hash' => HashCast::class,
         'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
         'upload_start' => 'datetime',
         'progress' => 'float',

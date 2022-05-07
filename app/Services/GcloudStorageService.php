@@ -4,7 +4,7 @@ use Google\Cloud\Core\Exception\NotFoundException as GcloudNotFoundException;
 use Google\Cloud\Storage\{StorageClient, StorageObject};
 use Illuminate\Support\Carbon;
 use App\Services\GcloudStorageService\GcsUrl;
-use App\Support\{NotFoundException, Sha1Hash};
+use App\Support\{NotFoundException, Sha1Hash, Sha256Hash};
 
 /**
  * All of the methods on this class resolve file paths relative to the
@@ -43,8 +43,12 @@ class GcloudStorageService
 
     /**
      * Transform a Sha1Hash into an absolute GCS {@code gs://} URL.
+     *
+     * Note: Passing a {@link Sha1Hash} for {@param $hash} is deprecated.
+     *
+     * @param Sha256Hash|Sha1Hash $hash
      */
-    public function hashToGcsUrl(Sha1Hash $hash): GcsUrl
+    public function hashToGcsUrl($hash): GcsUrl
     {
         return $this->relativePathToAbsolutePath($hash->hex());
     }
