@@ -4,7 +4,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RpcConstants
 {
-    public const ERROR_SIZE_LIMIT_EXCEEDED = 1000;
+    public const
+        ERROR_SIZE_LIMIT_EXCEEDED = 1000,
+        ERROR_IN_PROGRESS = 1001,
+        ERROR_STATE = 1002,
+        ERROR_SYNTAX = 1003;
 
     private const H = 2000; // short for HTTP
     public const
