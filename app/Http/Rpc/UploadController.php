@@ -36,7 +36,7 @@ class UploadController
             [$upload, $url] = $this->uploads->begin(
                 hash: $hash, length: $length, name: $name);
             $presenter = new UploadPresenter();
-            return $presenter->present($upload, $Url);
+            return $presenter->present($upload, $url);
         } catch (SizeLimitExceededException $exc) {
             throw new RpcError(RpcConstants::ERROR_SIZE_LIMIT_EXCEEDED,
                 "The proposed file size exceeds the configured limit.");
