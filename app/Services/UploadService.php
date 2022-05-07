@@ -58,7 +58,9 @@ class UploadService
             throw new AlreadyUploadedException($file);
         }
 
-        $upload = Upload::where('hash', $hash->toString())->first();
+        $upload = $this->uploads->query()
+            ->where('hash', $hash->toString())
+            ->first();
         if ($upload !== null) {
             // TODO[pn]: hash collision
             //if ($upload->length !== $length) {
@@ -71,7 +73,7 @@ class UploadService
      */
     public function setProgress(int $uploadId, int $progressBytes): void
     {
-        $upload = Upload::where('id', $uploadId)->first();
+        $upload = $this->uploads->get($uploadId);
         if ($upload === null) {
             throw new NotFoundException();
         }
@@ -85,7 +87,7 @@ class UploadService
      */
     public function getProgress(int $uploadId): float
     {
-        $upload = Upload::where('id', $uploadId)->first();
+        $upload = $this->uploads->get($uploadId);
         if ($upload === null) {
             throw new NotFoundException();
         }
@@ -111,7 +113,7 @@ class UploadService
         \Ds\Set $tags,
         ?\DateTimeInterface $relevanceTimestamp
     ): File {
-        $upload = Upload::where('id', $uploadId)->first();
+        $upload = $this->uploads->get($uploadId);
         if ($upload === null) {
             throw new NotFoundException();
         }

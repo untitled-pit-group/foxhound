@@ -84,16 +84,32 @@ class UploadRepo
 
     public function select(bool $stale = false, bool $buried = false): Collection
     {
+        return $this->query(stale: $stale, buried: $buried)->get();
+    }
+
+    /**
+     * Get the upload, if it exists, is not stale and is not buried.
+     */
+    public function get(int $id, bool $stale = false, bool $buried = false): ?Upload
+    {
+        return $this->query(stale: $stale, buried: $buried)
+            ->where('id', $id)
+            ->first();
+    }
+
+    public function query(bool $stale = false, bool $buried = false)
+    {
         $query = Upload::query();
-        $reference = Carbon::now();
-        $where = [ ];
+
         if ( ! $stale) {
-            $threshold = $reference->sub(self::UPLOAD_STALE_THRESHOLD_SEC, 'seconds');
+            $threshold = Carbon::now()
+                ->sub(self::UPLOAD_STALE_THRESHOLD_SEC, 'seconds');
             $query = $query->where('upload_start', '>=', $threshold);
         }
         if ( ! $buried) {
-            $query = $query->orWhereNotNull('pending_removal_since');
+            $query = $query->whereNull('pending_removal_since');
         }
-        return $query->get();
+
+        return $query;
     }
 }
