@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace App\Jobs;
 use App\Models\{File, FileIndexingState};
+use App\Models\File\FileType;
 use App\Models\FileIndexingState\IndexingState;
 use App\Services\GcloudStorageService;
 use Illuminate\Support\Carbon;
@@ -53,6 +54,7 @@ class IndexPlaintext extends Job
         app('db')->insert(
             'insert into files_fulltext (id, content, locators) values (?, ?, ?)',
             [$this->file->id, $text, '\x']);
+        $this->file->type = FileType::PLAIN;
         $this->indexingState->state = IndexingState::FINISHED;
         $this->indexingState->last_activity = Carbon::now();
         $this->indexingState->save();
