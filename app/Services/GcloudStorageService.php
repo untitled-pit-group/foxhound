@@ -5,6 +5,7 @@ use Google\Cloud\Storage\{StorageClient, StorageObject};
 use Illuminate\Support\Carbon;
 use App\Services\GcloudStorageService\GcsUrl;
 use App\Support\{NotFoundException, Sha1Hash, Sha256Hash};
+use Psr\Http\Message\StreamInterface;
 
 /**
  * All of the methods on this class resolve file paths relative to the
@@ -92,6 +93,11 @@ class GcloudStorageService
                 Carbon::now()->add(24, 'hours'),
                 [ 'version' => 'v4' ],
             );
+    }
+
+    public function downloadStream(GcsUrl $url): StreamInterface
+    {
+        return $this->urlToObjectInstance($url)->downloadAsStream();
     }
 
     /**

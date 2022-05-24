@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 namespace App\Services;
+use App\Jobs\IndexPlaintext as IndexPlaintextJob;
 use App\Models\{File, Upload};
 use App\Repositories\UploadRepo;
 use App\Services\GcloudStorageService\GcsUrl;
@@ -179,6 +180,10 @@ class UploadService
 
         // TODO[pn]: This should enqueue indexing. Skipping until indexing is
         // actually implemented.
+        // HACK[pn]: This assumes that the file is plaintext and inserts it
+        // as-is into the database: this will make for very bad results if it
+        // isn't, in fact, plaintext!
+        dispatch(new IndexPlaintextJob($file));
         // TODO[pn]: Indexing must check whether the file SHA-1 matches, given
         // that we can't do that here because this part is synchronous.
         // See issue #25.
