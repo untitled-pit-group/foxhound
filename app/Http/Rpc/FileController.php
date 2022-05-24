@@ -17,9 +17,13 @@ class FileController
         // hasOne relationship (it seems to only do the inverse), so we take the
         // O(2N) hit here but do it in two queries instead of N.
         $files = File::all();
+        $fileIndex = [];
+        foreach ($files as $file) {
+            $fileIndex[$file->id] = $file;
+        }
         $fileIndexingStates = FileIndexingState::all();
         foreach ($fileIndexingStates as $fileIndexingState) {
-            $files[$fileIndexingState->id]->indexingState = $fileIndexingState;
+            $fileIndex[$fileIndexingState->id]->indexingState = $fileIndexingState;
         }
 
         $presenter = new FilePresenter();
