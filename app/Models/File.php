@@ -6,7 +6,7 @@ use App\Models\File\FileType;
 use App\Models\Support\RandomIdModel;
 use App\Services\GcloudStorageService\GcsUrl;
 use App\Support\Sha1Hash;
-use App\Support\Db\{EnumCast, StringableCast};
+use App\Support\Db\{EnumCast, HashCast, StringableCast};
 use App\Support\Postgres\StringArray;
 
 class File extends RandomIdModel
@@ -17,7 +17,7 @@ class File extends RandomIdModel
         'deleting' => FileDeleting::class,
     ];
     protected $casts = [
-        'hash' => StringableCast::class . ':' . Sha1Hash::class,
+        'hash' => HashCast::class,
         'gcs_path' => StringableCast::class . ':' . GcsUrl::class,
         'tags' => StringArray::class,
         'upload_timestamp' => 'datetime',
