@@ -12,6 +12,11 @@ class SearchController
             throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
                 "No search_query provided.");
 
+        // TODO[pn]: This is a hack to make multiple words work but as any hack
+        // it works only barely. Notably, anything "quoted" will break this
+        // horribly.
+        $query = implode(' & ', explode(' ', $query));
+
         // TODO[pn]: This uses the English normalization and so is kinda stupid.
         // TODO?[pn]: Postgres doesn't pay attention to partial matches...
         $searchResults = app('db')->select(<<<SQL
