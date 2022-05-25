@@ -15,7 +15,10 @@ class SearchController
         // TODO[pn]: This is a hack to make multiple words work but as any hack
         // it works only barely. Notably, anything "quoted" will break this
         // horribly.
-        $query = implode(' & ', explode(' ', $query));
+        $query = explode(' ', $query);
+        $query = array_filter($query, fn($x) => trim($x) !== '');
+        $query = array_map(fn($x) => trim($x));
+        $query = implode(' & ', $query);
 
         // TODO[pn]: This uses the English normalization and so is kinda stupid.
         // TODO?[pn]: Postgres doesn't pay attention to partial matches...
