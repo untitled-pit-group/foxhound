@@ -216,7 +216,7 @@ class FileController
 
         app('db')->transaction(function ($db) use ($file) {
             $db->delete('delete from files_fulltext where id = ?', [$file->id]);
-            $file->indexingState->delete();
+            $file->indexingState?->delete();
             $file->delete();
         });
     }
