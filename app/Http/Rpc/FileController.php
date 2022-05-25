@@ -164,6 +164,33 @@ class FileController
         return $presenter->present($file, $file->indexingState);
     }
 
+    public function deleteFile(array $params): void
+    {
+        $id = $params['file_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No file_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "file_id is not a valid file ID.");
+        }
+
+        $file = File::where('id', $id)->first();
+        if ($file === null) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "file_id does not correspond to a file.");
+        }
+
+        $this->gcs->delete($file->gcs_path, onlyIfPresent: true);
+
+        app('db')->transaction(function ($db) use ($file) {
+            $db->delete('delete from files_fulltext where id = ?', [$file->id]);
+            $file->indexingState->delete();
+            $file->delete();
+        });
+    }
+
     public function editTags(array $params): array
     {
         $id = $params['file_id'] ??

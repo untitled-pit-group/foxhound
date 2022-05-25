@@ -18,6 +18,7 @@ $rpc->register('test.hello_world', function (array $params) {
         'files.check_indexing_progress' => 'FileController@checkIndexingProgress',
         'files.get_indexing_error' => 'FileController@getIndexingError',
         'files.get' => 'FileController@getFile',
+        'files.delete' => 'FileController@deleteFile',
         'files.request_download' => 'FileController@requestDownload',
         'files.edit' => 'FileController@editFile',
         'files.edit_tags' => 'FileController@editTags',

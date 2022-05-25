@@ -331,6 +331,22 @@ files.get
     2404 not_found
         The ``file_id`` is invalid.
 
+============
+files.delete
+============
+
+:Summary: Delete a file.
+:Params:
+    file_id
+        The file ID.
+:Response: ``null``
+:Errors:
+    2404 not_found
+        The ``file_id`` is invalid.
+
+The file might not be removed from GCS right away, but it will no longer show
+up in ``files.list`` or in search results.
+
 ======================
 files.request_download
 ======================
