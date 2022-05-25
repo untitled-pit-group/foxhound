@@ -17,7 +17,7 @@ class SearchController
         // horribly.
         $query = explode(' ', $query);
         $query = array_filter($query, fn($x) => trim($x) !== '');
-        $query = array_map(fn($x) => trim($x));
+        $query = array_map(fn($x) => trim($x), $query);
         $query = implode(' & ', $query);
 
         // TODO[pn]: This uses the English normalization and so is kinda stupid.
