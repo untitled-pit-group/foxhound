@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace App\Http\Rpc;
 use App\Models\{File, FileIndexingState};
+use App\Models\FileIndexingState\IndexingState;
 use App\Rpc\RpcError;
 use App\Services\GcloudStorageService;
 use App\Support\{Arr, Id, NotImplementedException, RpcConstants};
@@ -61,8 +62,37 @@ class FileController
 
     public function getIndexingError(array $params): array
     {
-        // TODO
-        throw new NotImplementedException();
+        $id = $params['file_id'] ??
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "No file_id provided.");
+        try {
+            $id = Id::decode($id);
+        } catch (\Throwable $exc) {
+            throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
+                "file_id is not a valid file ID.");
+        }
+
+        $file = File::where('id', $id)->first();
+        if ($file === null) {
+            throw new RpcError(RpcConstants::ERROR_NOT_FOUND,
+                "file_id does not correspond to a file.");
+        }
+
+        $indexingState = $file->indexingState;
+        if ($indexingState === null ||
+            $indexingState->state != IndexingState::ERROR) {
+            throw new RpcError(RpcConstants::ERROR_STATE,
+                "The file has not failed indexing.");
+        }
+
+        $ctx = $indexingState->error_context;
+        return [
+            'stage' => 1, // TODO[pn]
+            'message' => $ctx['message'],
+            'log' => sprintf("%s: %s\nat %s\n%s",
+                $ctx['exception'], $ctx['exception_message'],
+                $ctx['location'], $ctx['trace']),
+        ];
     }
 
     public function getFile(array $params): array
