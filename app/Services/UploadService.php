@@ -149,9 +149,8 @@ class UploadService
             throw new NotFoundException();
         }
 
-        $gcsUrl = $this->gcs->hashToGcsUrl($upload->hash);
         try {
-            $objectInfo = $this->gcs->getInfo($gcsUrl);
+            $objectInfo = $this->gcs->getInfo($upload->gcs_path);
         } catch (NotFoundException $exc) {
             throw new UploadInProgressException($upload);
         }
