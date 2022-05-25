@@ -10,7 +10,7 @@ class SearchController
     {
         $query = $params['search_query'] ??
             throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
-                "No query provided.");
+                "No search_query provided.");
 
         // TODO[pn]: This uses the English normalization and so is kinda stupid.
         // TODO?[pn]: Postgres doesn't pay attention to partial matches...
