@@ -8,7 +8,7 @@ class SearchController
 {
     public function performSearch(array $params): array
     {
-        $query = $params['query'] ??
+        $query = $params['search_query'] ??
             throw new RpcError(RpcConstants::ERROR_INVALID_PARAMS,
                 "No query provided.");
 
