@@ -22,7 +22,7 @@ class SearchController
             from files_fulltext
             where to_tsvector('english', content) @@ to_tsquery(:query)
             order by ts_rank(to_tsvector('english', content), to_tsquery(:query)) desc
-        SQL, [':query' => $params['query']]);
+        SQL, [':query' => $query]);
 
         $presenter = new SearchResultPresenter();
         return array_map(fn($x) => $presenter->present($x), $searchResults);
