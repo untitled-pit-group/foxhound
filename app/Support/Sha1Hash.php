@@ -37,7 +37,6 @@ class Sha1Hash
         // HACK[pn]: This should be refactored preferrably, this isn't exactly
         // a string by this point.
         $raw = stream_get_contents($raw);
-        $raw = pg_unescape_bytea($raw);
         return new self($raw);
     }
     public function toString(): string
