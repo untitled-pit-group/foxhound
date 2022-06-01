@@ -51,3 +51,9 @@ than that, use your best judgement :)
 [EditorConfig]: https://editorconfig.org/
 [PSR-1]: https://www.php-fig.org/psr/psr-1/
 [PSR-12]: https://www.php-fig.org/psr/psr-12/
+
+## License
+
+Insofar possible under the purview of authors' copyright and not contrary to
+other restrictions, the code in this repository is made available under the
+[0-clause BSD license.](./LICENSE)
